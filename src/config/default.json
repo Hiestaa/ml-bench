@@ -1,0 +1,9 @@
+{
+    "state": "DEBUG",
+    "server": {
+        "port": 5000
+    },
+    "log": {
+        "fileLevel": 10
+    }
+}
