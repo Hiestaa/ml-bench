@@ -9,10 +9,11 @@ import tornado
 from tornado.web import Application
 from tornado.ioloop import IOLoop
 
-from conf import Conf
-import log
 
 from handlers.templatesHandler import TemplatesHandler
+from tools import log
+from tools import model
+from conf import Conf
 
 
 def parse_args():
@@ -59,7 +60,10 @@ def run():
     application = Application(server_routes, **server_settings)
     application.listen(Conf['server']['port'])
 
-    tornado.ioloop.IOLoop.instance().start()
+    try:
+        tornado.ioloop.IOLoop.instance().start()
+    except KeyboardInterrupt:
+        logging.warning("Keyboard Interrupt: exiting now.")
 
 if __name__ == '__main__':
     run()

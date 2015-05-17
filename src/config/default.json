@@ -5,5 +5,10 @@
     },
     "log": {
         "fileLevel": 10
+    },
+    "database": {
+        "host": "localhost",
+        "port": 27017,
+        "dbName": "mlBench"
     }
 }
