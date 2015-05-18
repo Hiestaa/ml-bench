@@ -47,7 +47,7 @@ class SolutionsService(Service):
         compatible strings as well.
         """
         logging.debug("Saving new entry: %s" % ", ".join(
-            reduce(lambda (name, value): "%s - %s" % (name, value),
+            reduce(lambda name, value: "%s - %s" % (name, value),
                    kwargs.iteritems())))
         post = self.schema()
         for name, value in kwargs.iteritems():

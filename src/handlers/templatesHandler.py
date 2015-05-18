@@ -14,13 +14,20 @@ class TemplatesHandler(RequestHandler):
     """Handle requests for html templates"""
     @gen.coroutine
     def get(self, filename=None):
-        # res = yield model.getService('problems').insert(
-        #     types=[], name='test', parameters={}, implementation='implem',
-        #     visualization='testviz', dataset='none')
-        # print res
-        # cursor = model.getService('problems').getAll()
-        # for document in (yield cursor.to_list(length=None)):
-        #     print document
+        s = yield model.getService('solverTemplates').insert(
+            type='optimizer', basename='opt', parameters={},
+            implementation='implem', visualization='viz')
+        print repr(s)
+        p = yield model.getService('problems').insert(
+            types=[], name='test', parameters={}, implementation='implem',
+            visualization='testviz', dataset='none')
+        print repr(p)
+        res = yield model.getService('solverInstances').insert(
+            templateId=s, fullName='optimizer', parameters={},
+            problemId=p)
+        print repr(res)
+        document = yield model.getService('solverInstances').getById(res)
+        print document
         templateRoutes = {
             'ui': 'ui.html'
         }

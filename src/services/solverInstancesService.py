@@ -5,7 +5,10 @@ from __future__ import unicode_literals
 import logging
 from bson.objectid import ObjectId
 
+from tornado import gen
+
 from baseService import Service
+from tools import model
 
 """
 # solverInstances collection
@@ -50,7 +53,7 @@ class SolverInstancesService(Service):
         compatible strings as well.
         """
         logging.debug("Saving new entry: %s" % ", ".join(
-            reduce(lambda (name, value): "%s - %s" % (name, value),
+            reduce(lambda name, value: "%s - %s" % (name, value),
                    kwargs.iteritems())))
         post = self.schema()
         for name, value in kwargs.iteritems():
@@ -61,3 +64,35 @@ class SolverInstancesService(Service):
             if not isinstance(post['_id'], ObjectId):
                 post['_id'] = ObjectId(post['_id'])
         return self._collection.insert(self.validate(post))
+
+    @gen.coroutine
+    def getById(self, _id, fields=None):
+        """
+        Return a future over the document specific to this id. call yield over
+        the future to resolve it.
+        `fields` allow to select which field will be returned, everything is
+        returned by default.
+        This will use the solverTemplatesService to add a `template` field
+        that contains the solver template corresponding to the `templateId`
+        linked. Idem for the linked problem.
+        """
+        # retrieve the solver
+        if fields is None:
+            solver = yield self._collection.find_one({'_id': _id})
+        else:
+            solver = yield self._collection.find_one(
+                {'_id': _id},
+                self.validate({f: True for f in fields}, strict=False))
+        # retrieve the linked template
+        template = yield model.getService('solverTemplates').getById(
+            solver['templateId'])
+        # retrieve the linked problem
+        problem = yield model.getService('problems').getById(
+            solver['problemId'])
+
+        # create the `template` and `problem` entried in the solver.
+        solver['template'] = template
+        solver['problem'] = problem
+
+        # returns the solver
+        raise gen.Return(solver)
