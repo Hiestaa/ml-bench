@@ -2,18 +2,23 @@
 <html lang="en-gb" dir="ltr" class="uk-height-1-1">
     <head>
         <meta charset="utf-8">
-        <title>ML-Bench Panel</title>
+        <title>{% block title %}ML-Bench Panel{% end %}</title>
         <link rel="shortcut icon" href="/assets/custom/images/favicon.ico" type="image/x-icon">
         <link rel="apple-touch-icon-precomposed" href="/assets/custom/images/apple-touch-icon.png">
         <link rel="stylesheet" href="/assets/uikit/css/uikit.min.css">
+        <link rel="stylesheet" href="/assets/selectize/css/selectize.min.css">
+        <link rel="stylesheet" href="/assets/custom/css/base.css">
+        {% block css %}{% end %}
         <script src="/assets/jquery/jquery-1.11.1.min.js"></script>
         <script src="/assets/uikit/js/uikit.min.js"></script>
+        <script src="/assets/selectize/js/standalone/selectize.min.js"></script>
+        {% block js %}{% end %}
     </head>
 
     <body class="uk-height-1-1">
         {% module Template('nav.html', active=active) %}
-        <div class="uk-vertical-align uk-text-center uk-height-1-1">
-            <div class="uk-vertical-align-middle" style="width: 250px;">
+        <div class="uk-vertical-align uk-text-center uk-height-1-1" id="main-container">
+            <div class="uk-vertical-align-middle uk-width-1-1">
                 {% block content %}
                     <h1>No content defined</h1>
                 {% end %}

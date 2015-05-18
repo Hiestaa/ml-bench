@@ -1,0 +1,7 @@
+#main-container {
+    height: calc(100% - 40px) !important;
+}
+
+#main-container > div {
+    height: 80%;
+}

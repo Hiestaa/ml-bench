@@ -1,0 +1,26 @@
+#page-title {
+    margin-top: -30px;
+}
+
+#content-container {
+    height: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #F5F5F5;
+}
+
+#side-list-container {
+    display: inline-block;
+    margin: -2px;
+    height: 100%;
+    overflow: auto;
+    background-color: #fff;
+}
+
+#form-container {
+    display: inline-block;
+    height: 100%;
+    overflow: auto;
+    margin: -2px;
+}
