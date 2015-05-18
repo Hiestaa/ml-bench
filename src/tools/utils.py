@@ -120,3 +120,17 @@ def clamp(val, mini, maxi):
     or val < mini in which case maxi is returned
     """
     return max(mini, min(maxi, val))
+
+
+def lcFirst(s):
+    """
+    Returns a copy of the string with the first letter lowercased
+    """
+    return s[0].lower() + s[1:]
+
+
+def ucFirst(s):
+    """
+    Returns a copy of the string with the first letter uppercased
+    """
+    return s[0].upper() + s[1:]

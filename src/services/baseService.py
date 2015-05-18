@@ -160,10 +160,12 @@ class Service(object):
             cursor.skip((page - 1) * perPage).limit(perPage)
         return cursor
 
-    def set(self, _id, field, value):
+    def set(self, _id, field, value=None):
         """
-        Set the given field to the given value.
+        Set the given field(s) to the given value(s).
         If _id is a list, it will be used as a list of ids.
+        If field is a dict, the association between field name and value set
+        is expected. In this case, value will be ignored.
         All documents matching these ids will be modified
         """
         select = {'_id': _id}
@@ -171,8 +173,12 @@ class Service(object):
             select['_id'] = {'$in': [ObjectId(i) for i in _id]}
         else:
             select['_id'] = ObjectId(_id)
+        if isinstance(field, dict):
+            update = field
+        else:
+            update = {field: value}
         return self._collection.update(
             select,
-            {'$set': self.validate({field: value}, strict=False)},
+            {'$set': self.validate(update, strict=False)},
             multi=True
         )

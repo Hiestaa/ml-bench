@@ -15,7 +15,7 @@ from pymongo.son_manipulator import SONManipulator
 
 from conf import Conf
 from services.baseService import Service
-from tools.utils import dateFormat, sizeFormat, getFolderSize
+from tools.utils import dateFormat, sizeFormat, getFolderSize, ucFirst
 
 
 class ObjectIdManipulator(SONManipulator):
@@ -82,8 +82,6 @@ server (%d) exceeded." % (10))
         For instance: the service "hello" should be a class named
         "HelloService" found in the module "helloService"
         """
-        def ucFirst(s):
-            return s[0].upper() + s[1:]
         # if the service is already instanciated, return it
         if serviceName in self._services:
             return self._services[serviceName]

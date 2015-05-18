@@ -11,6 +11,7 @@ from tornado.ioloop import IOLoop
 
 
 from handlers.templatesHandler import TemplatesHandler
+from handlers.problemsHandler import ProblemsHandler
 from tools import log
 from tools import model
 from conf import Conf
@@ -29,7 +30,7 @@ messages and -vvv enable DEBUG messages. Ignored if started using daemon.",
                         help="Remove ALL logging messages from the console.")
     parser.add_argument('-l', '--log', action="store",
                         help="Change the path of the log file, default \
-is log/server.log", default='log/server.log')
+is log/server.log", default='../log/server.log')
     return parser.parse_args()
 
 
@@ -39,7 +40,8 @@ def run():
     log.init(ns.verbose, ns.quiet, logpath=ns.log)
 
     server_routes = [
-        (r"/([a-zA-Z_.-]+)?\/?", TemplatesHandler)
+        (r"/api/problems/([a-zA-Z_.-]+)/?", ProblemsHandler),
+        (r"/([a-zA-Z_.-]+)?/?", TemplatesHandler)
     ]
 
     server_settings = {

@@ -63,8 +63,11 @@ def init(verbose=0, quiet=False, logpath='log/server.log', colored=True):
         4: 1
     }
 
-    if not os.path.exists('log'):
-        os.mkdir('log')
+    tree = []
+    for folder in os.path.split(logpath)[:-1]:
+        tree.append(folder)
+        if not os.path.exists(os.path.join(*tree)):
+            os.mkdir(os.path.join(*tree))
 
     logger = logging.getLogger()
     logger.propagate = False
