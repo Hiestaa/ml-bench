@@ -2,14 +2,31 @@
 
 {% block title %}Problems{% end %}
 
+{% block cssTwoCol %}
+<link rel="stylesheet" href="/assets/custom/css/problems/problemForm.css">
+{% end %}
+
+{% block js %}
+<script src="/assets/custom/js/problems/problems.js"></script>
+<script src="/assets/custom/js/problems/problemForm.js"></script>
+<script type="text/javascript">
+$(function () {
+    new ProblemsCRUDPanel($('#problems-list'), $('#problem-form-container')).initialize();
+});
+</script>
+{% end %}
+
 {% block side-list %}
-<ul class="uk-list uk-list-striped">
-    {% for x in xrange(5) %}
-        <li>stuff...</li>
-    {% end %}
-</ul>
+<table class="uk-table uk-table-hover uk-table-striped uk-table-condensed" id="problems-list">
+    <thead>
+        <tr><th>Problems list</th></tr>
+    </thead>
+    <tbody id="problems-list">
+    </tbody>
+</table>
+<ul class="uk-list uk-list-striped"></ul>
 {% end %}
 
 {% block form %}
-<div class="fake-modal-container">stuff...</div>
+<div class="fake-modal-container" id="problem-form-container">{% include "problemForm.html" %}</div>
 {% end %}

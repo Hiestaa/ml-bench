@@ -1,0 +1,14 @@
+.problem-form {
+    text-align: left;
+    margin: 2em;
+    margin-left: 5em;
+}
+
+.problem-form .parameter-field {
+    /*margin-top: 5px;*/
+    margin-bottom: 10px;
+}
+
+.problem-form #controls {
+    text-align: right;
+}

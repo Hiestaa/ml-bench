@@ -5,3 +5,17 @@
 #main-container > div {
     height: 80%;
 }
+
+.selectize-input {
+    border-radius: 0px !important;
+    line-height: 13px !important;
+}
+
+
+.selectize-input input {
+    height: 9px !important;
+}
+
+code {
+    font-size: 14px !important;
+}

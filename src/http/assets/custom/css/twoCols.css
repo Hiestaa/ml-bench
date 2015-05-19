@@ -8,6 +8,7 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #F5F5F5;
+    position: relative;
 }
 
 #side-list-container {
@@ -18,9 +19,30 @@
     background-color: #fff;
 }
 
+#right-arrow {
+    position: absolute;
+    top: 50%;
+    line-height: 0em;
+    font-size: 7em;
+    margin-left: 15px;
+    opacity: 0.2;
+}
+
 #form-container {
     display: inline-block;
     height: 100%;
     overflow: auto;
     margin: -2px;
+}
+
+.clickable-list-item {
+    cursor: pointer;
+    padding: 5px 5px !important;
+    text-align: left;
+    text-transform: capitalize;
+}
+
+.clickable-list-item:active,
+.clickable-list-item:focus {
+    background-color: #E6E6E6;
 }

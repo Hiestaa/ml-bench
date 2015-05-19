@@ -18,10 +18,25 @@ from problems.optimization import Optimization
 
 class ProblemsHandler(RequestHandler):
     """Handle API requests for problems-related data"""
+    @gen.coroutine
+    def getProblems(self):
+        """
+        Route: `GET /api/problems/list`
+        Returns the list of existing problem objects
+        TODO: Add pagination system
+        """
+        cursor = model.getService('problems').getAll(
+            orderBy={'implementation': 1, 'name': 1})
+
+        problems = [
+            problem for problem in (yield cursor.to_list(length=None))]
+
+        self.write(json.dumps(problems))
+
     def getProblemClasses(self):
         """
         Route: `GET /api/problems/implementations`
-        Return the list available problem types, indexed by types.
+        Return the list available problem classes, indexed by types.
         This writes back to the client an object with the following structure:
         `{<problemType>: {<className>: {
             'description': <description>,
@@ -42,8 +57,9 @@ class ProblemsHandler(RequestHandler):
                 else:
                     logging.info(">> Found submodule: %s" % name)
                     yield name
-            for name in genModules(next_level):
-                yield name
+            if len(next_level) > 0:
+                for name in genModules(next_level):
+                    yield name
 
         result = {
             'optimization': {},
@@ -64,6 +80,7 @@ class ProblemsHandler(RequestHandler):
             argspec = inspect.getargspec(implemClass.__init__)
             argspec.args.remove('self')
             argspec.args.remove('name')
+            # argspec.args.remove('dataset')
             classObj['parameters'] = argspec.args
 
             # find the documentation of this object
@@ -73,7 +90,8 @@ class ProblemsHandler(RequestHandler):
             # now find inheritance tree to know where this class should be
             # saved.
             implemClasses = inspect.getmro(implemClass)
-            if Optimization in implemClasses:
+            if Optimization in implemClasses and name != 'optimization':
+                print name, classObj
                 result['optimization'][name] = classObj
             # todo: fill in the 'clustering' and 'classification' fields
 
@@ -149,7 +167,8 @@ type interface." % (implementation))
 
     def get(self, action):
         actions = {
-            'implementations': self.getProblemClasses
+            'implementations': self.getProblemClasses,
+            'list': self.getProblems
         }
         if action in actions:
             return actions[action]()
