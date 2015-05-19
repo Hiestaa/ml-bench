@@ -14,6 +14,7 @@ import pkgutil
 from tools import model
 from tools.utils import lcFirst, ucFirst
 from problems.optimization import Optimization
+from conf import Conf
 
 
 class ProblemsHandler(RequestHandler):
@@ -67,12 +68,12 @@ class ProblemsHandler(RequestHandler):
             'classification': {}
         }
 
-        for name in genModules(['problems']):
+        for moduleName in genModules(['problems']):
             classObj = {}
             # for each module, get the actual implementation class
             implemModule = __import__(
-                'problems.%s' % name, fromlist=[ucFirst(name)])
-            implemClass = getattr(implemModule, ucFirst(name))
+                'problems.%s' % moduleName, fromlist=[ucFirst(moduleName)])
+            implemClass = getattr(implemModule, ucFirst(moduleName))
 
             # now find the arguments of the constructor, remove 'self' and
             # 'name' which are not user-configurable parameters specific to
@@ -90,9 +91,9 @@ class ProblemsHandler(RequestHandler):
             # now find inheritance tree to know where this class should be
             # saved.
             implemClasses = inspect.getmro(implemClass)
-            if Optimization in implemClasses and name != 'optimization':
-                print name, classObj
-                result['optimization'][name] = classObj
+            if Optimization in implemClasses and moduleName != 'optimization':
+                print moduleName, classObj
+                result['optimization'][ucFirst(moduleName)] = classObj
             # todo: fill in the 'clustering' and 'classification' fields
 
         self.write(json.dumps(result))
@@ -112,7 +113,7 @@ class ProblemsHandler(RequestHandler):
         * dataset:string (optional), name of the related dataset, if any
         * _id:string (optional), the _id of the document to update. If not
           provided, an new document will be inserted.
-        Writes back the id of the updated or inserted document.
+        Writes back the whole inserted or updated document
         """
         name = self.get_argument('name')
         parameters = json.loads(self.get_argument('parameters'))
@@ -142,28 +143,31 @@ class ProblemsHandler(RequestHandler):
 type interface." % (implementation))
 
         # check that the given visualization exist
-        if visualization is not None:
+        if visualization:
             # this will raise an exception if the field does not exist
             with open(os.path.join(*(
                     os.path.split(Conf['scriptFolders']['problemViews']) +
-                    visualization))):
+                    (visualization,)))):
                 pass
 
+        # todo: check that the given `dataset` exists and is a subclass of
+        # `DataContainer`.
+
         # perform the actual insert/update
+        data = {
+            'types': problemTypes,
+            'name': name,
+            'parameters': parameters,
+            'visualization': visualization,
+            'dataset': dataset,
+            'implementation': implementation
+        }
         if _id is None:
-            _id = yield model.getService('problems').insert(
-                types=problemTypes, name=name, parameters=parameters,
-                implementation=implementation, visualization=visualization,
-                dataset=dataset)
+            _id = yield model.getService('problems').insert(**data)
         else:
-            yield model.getService('problems').set(_id, {
-                'types': problemTypes,
-                'name': name,
-                'parameters': parameters,
-                'visualization': visualization,
-                'dataset': dataset
-            })
-        self.write(_id)
+            yield model.getService('problems').set(_id, data)
+        data['_id'] = str(_id)
+        self.write(json.dumps(data))
 
     def get(self, action):
         actions = {

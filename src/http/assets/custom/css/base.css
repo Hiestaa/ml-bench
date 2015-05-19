@@ -6,16 +6,27 @@
     height: 80%;
 }
 
+.selectize-dropdown {
+    line-height: 20px !important;
+    font-size: 14px !important;
+}
 .selectize-input {
     border-radius: 0px !important;
-    line-height: 13px !important;
+    line-height: 20px !important;
+    padding: 4px 6px !important;
+    font-size: 14px !important;
 }
 
 
 .selectize-input input {
-    height: 9px !important;
+    height: 15px !important;
 }
 
 code {
     font-size: 14px !important;
+}
+
+.invalid {
+    border-color: #ff0000 !important;
+    background-color: #fff9fa !important;
 }
