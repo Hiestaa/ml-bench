@@ -14,6 +14,24 @@ the project.
 """
 
 
+def genModules(pkgs):
+    """
+    Recursively yield all the modules in the given package.
+    """
+    logging.info("Listing modules in package: %s" % str(pkgs))
+    next_level = []
+    for (module_loader, name, is_pkg) in pkgutil.iter_modules(
+            path=pkgs):
+        if is_pkg:
+            next_level.append(name)
+        else:
+            logging.info(">> Found submodule: %s" % name)
+            yield name
+    if len(next_level) > 0:
+        for name in genModules(next_level):
+            yield name
+
+
 def sizeFormat(sizeInBytes):
     """
     Format a number of bytes (int) into the right unit for human readable

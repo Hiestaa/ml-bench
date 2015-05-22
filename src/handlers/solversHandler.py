@@ -13,54 +13,56 @@ import pkgutil
 
 from tools import model
 from tools.utils import lcFirst, ucFirst, genModules
-from problems.optimization import Optimization
+from solver.optimizer import Optimizer
+from solver.clusterer import Clusterer
+from solver.classifier import Classifier
 from conf import Conf
-from mlbExceptions import ProblemException
+from mlbExceptions import SolverException
 
 
-class ProblemsHandler(RequestHandler):
-    """Handle API requests for problems-related data"""
+class SolversHandler(RequestHandler):
+    """Handle API requests for solver-related data"""
     @gen.coroutine
-    def getProblems(self):
+    def getSolvers(self):
         """
-        Route: `GET /api/problems/list`
-        Returns the list of existing problem objects
+        Route: `GET /api/solvers/list`
+        Returns the list of existing solver objects
         TODO: Add pagination system
         """
-        cursor = model.getService('problems').getAll(
+        cursor = model.getService('solvers').getAll(
             orderBy={'implementation': 1, 'name': 1})
 
-        problems = [
-            problem for problem in (yield cursor.to_list(length=None))]
+        solvers = [
+            solver for solver in (yield cursor.to_list(length=None))]
 
-        self.write(json.dumps(problems))
+        self.write(json.dumps(solvers))
 
-    def getProblemClasses(self):
+    def getSolverClasses(self):
         """
-        Route: `GET /api/problems/implementations`
-        Return the list available problem classes, indexed by types.
+        Route: `GET /api/solvers/implementations`
+        Return the list available solver classes, indexed by types.
         This writes back to the client an object with the following structure:
-        `{<problemType>: {<className>: {
+        `{<solverType>: {<className>: {
             'description': <description>,
-            'parameters': [<parameter names to be defined by the user>]
+            'parameters': [<parameter names to be defined by the class>]
         }}`
         """
         result = {
-            'optimization': {},
-            'clustering': {},
-            'classification': {}
+            'optimizer': {},
+            'clusterer': {},
+            'classifier': {}
         }
 
-        for moduleName in genModules(['problems']):
+        for moduleName in genModules(['solvers']):
             classObj = {}
             # for each module, get the actual implementation class
             implemModule = __import__(
-                'problems.%s' % moduleName, fromlist=[ucFirst(moduleName)])
+                'solvers.%s' % moduleName, fromlist=[ucFirst(moduleName)])
             implemClass = getattr(implemModule, ucFirst(moduleName))
 
             # now find the arguments of the constructor, remove 'self' and
             # 'name' which are not user-configurable parameters specific to
-            # this problem.
+            # this solver.
             argspec = inspect.getargspec(implemClass.__init__)
             argspec.args.remove('self')
             argspec.args.remove('name')
@@ -74,25 +76,28 @@ class ProblemsHandler(RequestHandler):
             # now find inheritance tree to know where this class should be
             # saved.
             implemClasses = inspect.getmro(implemClass)
-            if Optimization in implemClasses and moduleName != 'optimization':
-                result['optimization'][ucFirst(moduleName)] = classObj
-            # todo: fill in the 'clustering' and 'classification' fields
+            if Optimizer in implemClasses and moduleName != 'optimizer':
+                result['optimizer'][ucFirst(moduleName)] = classObj
+            if Clusterer in implemClasses and moduleName != 'clusterer':
+                result['clusterer'][ucFirst(moduleName)] = classObj
+            if Classifier in implemClasses and moduleName != 'classifier':
+                result['classifier'][ucFirst(moduleName)] = classObj
 
         self.write(json.dumps(result))
 
     @gen.coroutine
-    def saveProblem(self):
+    def saveSolver(self):
         """
-        Route: `POST: /api/problems/save`
-        Save a new or update an existing problem.
+        Route: `POST: /api/solvers/save`
+        Save a new or update an existing solver.
         The following parameters are expected:
-        * name:string, name of this problem
+        * name:string, name of this solver
         * parameters:json-encoded dict, association between parameters'
           name and value
-        * implementation:string, name of the related problem class
+        * implementation:string, name of the related solver class
         * visualization:string (optional), name of the script that contains the
           visualization javascript code.
-        * dataset:string (optional), name of the related dataset, if any
+        * problem:string, id of the problem this solver is designed to solve
         * _id:string (optional), the _id of the document to update. If not
           provided, an new document will be inserted.
         Writes back the whole inserted or updated document
@@ -101,60 +106,65 @@ class ProblemsHandler(RequestHandler):
         parameters = json.loads(self.get_argument('parameters'))
         implementation = self.get_argument('implementation')
         visualization = self.get_argument('visualization', default=None)
-        dataset = self.get_argument('dataset', default=None)
+        problem = self.get_argument('problem')
         _id = self.get_argument('_id', default=None)
 
         # retrieve the type of this implementation
         # TODO: make sure that the class 'implementation' exists
         implemModule = __import__(
-            'problems.%s' % lcFirst(implementation),
+            'solver.%s' % lcFirst(implementation),
             fromlist=[implementation])
         implemClasses = inspect.getmro(getattr(implemModule, implementation))
 
-        problemTypes = []
-        if Optimization in implemClasses:
-            problemTypes.append('optimization')
-        # TODO: check if Clustering or Classification is in the implenClasses
-        #       list
-        # makes sure the implementation implements at least one problem type
-        # interface
-        if len(problemTypes) == 0:
-            raise ProblemException(
-                problemTypes, name, parameters,
-                "The given implementation (%s) does not implement any problem \
+        solverType = None
+        if Optimizer in implemClasses:
+            solverType = 'optimizer'
+        if Clusterer in implemClasses:
+            solverType = 'clusterer'
+        if Classifier in implemClasses:
+            solverType = 'classifier'
+        # makes sure the implementation implements one of the solver interface
+        if solverType is None:
+            raise SolverException(
+                solverType, name, parameters,
+                "The given implementation (%s) does not implement any solver \
 type interface." % (implementation))
 
         # check that the given visualization exist
         if visualization:
             # this will raise an exception if the field does not exist
             with open(os.path.join(*(
-                    os.path.split(Conf['scriptFolders']['problemViews']) +
+                    os.path.split(Conf['scriptFolders']['solverViews']) +
                     (visualization,)))):
                 pass
 
-        # todo: check that the given `dataset` exists and is a subclass of
-        # `DataContainer`.
+        problemObj = yield model.getService('problems').getById(
+            problem, fields=['_id'])
+        if not problemObj:
+            raise SolverException(
+                solverType, name, parameters,
+                "The given problem (%s) does not exist!" % (problem))
 
         # perform the actual insert/update
         data = {
-            'types': problemTypes,
+            'type': solverType,
             'name': name,
             'parameters': parameters,
             'visualization': visualization,
-            'dataset': dataset,
+            'problemId': problem,
             'implementation': implementation
         }
         if _id is None:
-            _id = yield model.getService('problems').insert(**data)
+            _id = yield model.getService('solvers').insert(**data)
         else:
-            yield model.getService('problems').set(_id, data)
+            yield model.getService('solvers').set(_id, data)
         data['_id'] = str(_id)
         self.write(json.dumps(data))
 
     def get(self, action):
         actions = {
-            'implementations': self.getProblemClasses,
-            'list': self.getProblems
+            'implementations': self.getSolverClasses,
+            'list': self.getSolvers
         }
         if action in actions:
             return actions[action]()
@@ -162,7 +172,7 @@ type interface." % (implementation))
 
     def post(self, action):
         actions = {
-            'save': self.saveProblem
+            'save': self.saveSolver
         }
         if action in actions:
             return actions[action]()

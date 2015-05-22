@@ -32,8 +32,7 @@ class TemplatesHandler(RequestHandler):
             'run': 'run.html',
             'compare': 'compare.html',
             'crud-problems': 'problems.html',
-            'crud-solver-templates': 'solverTemplates.html',
-            'crud-solver-instances': 'solverInstances.html',
+            'crud-solvers': 'solvers.html',
             'crud-solutions': 'solutions.html'
         }
         if template is None or not template:

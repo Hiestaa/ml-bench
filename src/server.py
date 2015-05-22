@@ -12,6 +12,7 @@ from tornado.ioloop import IOLoop
 
 from handlers.templatesHandler import TemplatesHandler
 from handlers.problemsHandler import ProblemsHandler
+from handlers.solversHandler import SolversHandler
 from tools import log
 from tools import model
 from conf import Conf
@@ -41,6 +42,7 @@ def run():
 
     server_routes = [
         (r"/api/problems/([a-zA-Z_.-]+)/?", ProblemsHandler),
+        (r"/api/solvers/([a-zA-Z_.-]+)/?", SolversHandler),
         (r"/([a-zA-Z_.-]+)?/?", TemplatesHandler)
     ]
 
