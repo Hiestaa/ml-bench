@@ -35,6 +35,13 @@ function SolverForm($container, events) {
         saved: events.saved || default_event
     }
 
+    self.prefill = function (prefill) {
+        if (prefill && prefill.name)
+            self._$form.find('#input-name').val(prefill.name);
+        if (prefill && prefill.type)
+            self._selectizeType.addItem(prefill.type);
+    }
+
     self._retrieveProblems = function () {
         $.ajax({
             url: '/api/problems/list',

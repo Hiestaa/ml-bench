@@ -42,6 +42,17 @@ class SolversHandler(RequestHandler):
 
         self.write(json.dumps(solvers))
 
+    @gen.coroutine
+    def deleteSolverById(self):
+        """
+        Route: `DELETE /api/solvers/byId`
+        Remove the solver given by id.
+        The argument `_id` is required.
+        """
+        _id = self.get_argument('_id')
+        data = yield model.getService('solvers').deleteById(_id)
+        self.write(json.dumps(data))
+
     def getSolverClasses(self):
         """
         Route: `GET /api/solvers/implementations`
@@ -183,6 +194,14 @@ type interface." % (implementation))
     def post(self, action):
         actions = {
             'save': self.saveSolver
+        }
+        if action in actions:
+            return actions[action]()
+        raise HTTPError(404, 'Not Found')
+
+    def delete(self, action):
+        actions = {
+            'byId': self.deleteSolverById
         }
         if action in actions:
             return actions[action]()
