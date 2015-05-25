@@ -7,7 +7,7 @@ from baseSolver import BaseSolver
 
 class Classifier(BaseSolver):
     """Any Classifier should inherit from this base class"""
-    def __init__(self, fullName, problem, parameters={}):
+    def __init__(self, name, problem):
         super(Clusterer, self).__init__(
-            solverType='classifier', fullName=fullName,
-            problem=problem, parameters=parameters)
+            solverType='classifier', name=name,
+            problem=problem)

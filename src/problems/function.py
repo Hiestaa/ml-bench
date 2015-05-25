@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 
 from optimization import Optimization
 
+DEFAULT_EXP = 'sum(x[i] ** i for x in xrange(len(x)))'
+
 
 class Function(Optimization):
     """
@@ -15,14 +17,20 @@ class Function(Optimization):
     * `dimension`, number of dimensions of the function
     * `rangeMin`, minimum value each dimension can have
     * `rangeMax`, maximum value each dimension can have
+    * `goal`, whether the function should be maximized or minimized. Accepted
+      value are 'max', 'maxi', 'maxim', ... and '1'. All other value will
+      result in the function being miminized.
     """
-    def __init__(self, name, expression, dimension, rangeMin, rangeMax):
+    def __init__(self, name, dataset, expression=DEFAULT_EXP,
+                 dimension=10, rangeMin=0, rangeMax=100, goal='minimize'):
         super(Optimization, self).__init__(
-            problemTypes=['optimization'], name=name, dataset=None,
-            dimension=dimension, rangeMin=rangeMin, rangeMax=rangeMax)
+            name=name, dataset=None,
+            dimension=dimension, rangeMin=rangeMin, rangeMax=rangeMax,
+            goal=goal)
         self._dimension = dimension
         self._expression = expression
         self._range = (rangeMin, rangeMax)
+        self._goal = 1 if str(goal)[:3] == 'max' or str(goal) == '1' else -1
 
     def evaluate(self, solution):
         """
@@ -32,6 +40,9 @@ class Function(Optimization):
           returned by the `getScope` function.
         """
         return eval(self._expression, {x: solution})
+
+    def isBetter(self, evaluation1, evaluation2):
+        return evaluation1 * self._goal > evaluation2 * self._goal
 
     def getScope(self):
         """

@@ -64,9 +64,12 @@ class ProblemsHandler(RequestHandler):
             argspec = inspect.getargspec(implemClass.__init__)
             argspec.args.remove('self')
             argspec.args.remove('name')
-            # argspec.args.remove('dataset')
-            classObj['parameters'] = argspec.args
-
+            if 'dataset' in argspec.args:
+                argspec.args.remove('dataset')
+            if argspec.defaults:
+                classObj['parameters'] = dict(
+                    zip(argspec.args[-len(argspec.defaults):],
+                        argspec.defaults))
             # find the documentation of this object
             classObj['description'] = inspect.cleandoc(
                 inspect.getdoc(implemClass))

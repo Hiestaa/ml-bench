@@ -30,3 +30,44 @@ code {
     border-color: #ff0000 !important;
     background-color: #fff9fa !important;
 }
+
+.uk-button-warning {
+    background-color: #d38e38;
+    color: #ffffff;
+}
+.uk-button-warning:hover {
+    background-color: #F0AD4E;
+    color: #ffffff;
+}
+.uk-button-warning:active,
+.uk-button-warning:focus {
+    background-color: #c38334;
+    color: #ffffff;
+}
+
+.uk-modal-dialog .uk-modal-header {
+    margin: -20px -20px 15px;
+    padding: 20px;
+    border-bottom: 1px solid #E5E5E5;
+    border-radius: 4px 4px 0px 0px;
+    background: #FAFAFA none repeat scroll 0% 0%;
+    text-align: left !important;
+}
+#form-container .uk-modal-header h2 {
+    text-align: left !important;
+    margin-left: 4em;
+}
+
+.uk-modal-dialog .uk-modal-footer {
+    margin: 15px -48px -21px -90px;
+    padding: 20px;
+    border-radius: 0px 0px 4px 4px;
+    background: #FAFAFA none repeat scroll 0% 0%;
+    border-top: 1px solid #E5E5E5;
+}
+
+small {
+    color: #8C8C8C;
+    margin-left: 25px;
+    font-style: italic;
+}

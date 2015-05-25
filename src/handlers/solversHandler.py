@@ -13,9 +13,9 @@ import pkgutil
 
 from tools import model
 from tools.utils import lcFirst, ucFirst, genModules
-from solver.optimizer import Optimizer
-from solver.clusterer import Clusterer
-from solver.classifier import Classifier
+from solvers.optimizer import Optimizer
+from solvers.clusterer import Clusterer
+from solvers.classifier import Classifier
 from conf import Conf
 from mlbExceptions import SolverException
 
@@ -29,11 +29,16 @@ class SolversHandler(RequestHandler):
         Returns the list of existing solver objects
         TODO: Add pagination system
         """
+        def desobjectidfy(solver):
+            solver['problemId'] = str(solver['problemId'])
+            return solver
+
         cursor = model.getService('solvers').getAll(
             orderBy={'implementation': 1, 'name': 1})
 
         solvers = [
-            solver for solver in (yield cursor.to_list(length=None))]
+            desobjectidfy(solver) for solver in
+            (yield cursor.to_list(length=None))]
 
         self.write(json.dumps(solvers))
 
@@ -66,8 +71,13 @@ class SolversHandler(RequestHandler):
             argspec = inspect.getargspec(implemClass.__init__)
             argspec.args.remove('self')
             argspec.args.remove('name')
-            # argspec.args.remove('dataset')
-            classObj['parameters'] = argspec.args
+            argspec.args.remove('problem')
+            if argspec.defaults:
+                classObj['parameters'] = dict(
+                    zip(argspec.args[-len(argspec.defaults):],
+                        argspec.defaults))
+            else:
+                classObj['parameters'] = {}
 
             # find the documentation of this object
             classObj['description'] = inspect.cleandoc(
@@ -112,7 +122,7 @@ class SolversHandler(RequestHandler):
         # retrieve the type of this implementation
         # TODO: make sure that the class 'implementation' exists
         implemModule = __import__(
-            'solver.%s' % lcFirst(implementation),
+            'solvers.%s' % lcFirst(implementation),
             fromlist=[implementation])
         implemClasses = inspect.getmro(getattr(implemModule, implementation))
 

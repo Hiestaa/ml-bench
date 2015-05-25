@@ -33,8 +33,12 @@
     height: 100%;
     overflow: auto;
     margin: -2px;
+    padding-top: 15px;
 }
 
+#form-container legend {
+    padding-top: 5px;
+}
 .clickable-list-item {
     cursor: pointer;
     padding: 5px 5px !important;
@@ -43,6 +47,7 @@
 }
 
 .clickable-list-item:active,
+.clickable-list-item.active,
 .clickable-list-item:focus {
     background-color: #E6E6E6;
 }

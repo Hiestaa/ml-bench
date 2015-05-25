@@ -14,7 +14,7 @@ function ProblemItem ($listContainer, data, events) {
 
     self._$listContainer = $listContainer
     self._template = '\
-<tr><td class="clickable-list-item" data-problem-id="{{_id}}">{{name}}</td></tr>';
+<tr><td class="clickable-list-item" data-problem-id="{{_id}}" id="{{id}}">{{name}}</td></tr>';
     self._data = data;
 
     self._$item = $(render(self._template, data)).appendTo(self._$listContainer);
@@ -89,6 +89,8 @@ function ProblemsCRUDPanel ($listContainer, $formContainer) {
     }
 
     self.onProblemClick = function (problemData) {
+        self._$listContainer.find('.clickable-list-item').removeClass('active');
+        self._$listContainer.find('#' + problemData._id).addClass('active');
         self._problemForm.setProblem(problemData);
     }
     self.onProblemSaved = function (problemData) {

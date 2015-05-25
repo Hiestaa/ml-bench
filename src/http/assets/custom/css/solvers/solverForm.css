@@ -1,14 +1,13 @@
-.problem-form {
+.solver-form {
     text-align: left;
-    margin: 2em;
     margin: 1em 2em 2em 5em;
 }
 
-.problem-form .parameter-field {
+.solver-form .parameter-field {
     /*margin-top: 5px;*/
     margin-bottom: 10px;
 }
 
-.problem-form #controls {
+.solver-form #controls {
     text-align: right;
 }

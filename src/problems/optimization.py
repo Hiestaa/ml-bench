@@ -25,6 +25,16 @@ class Optimization(BaseProblem):
         """
         raise NotImplementedError()
 
+    def isBetter(self, evaluation1, evaluation2):
+        """
+        Given two evaluation results, return a boolean that is true
+        if `evaluation1` is better for this problem than `evaluation2`,
+        false otherwise.
+        * evaluation1/evaluation2:float, result of the call to
+          `evaluate` for two solutions.
+        """
+        raise NotImplementedError()
+
     def getScope(self):
         """
         Returns an array, where each variable of the optimization problem

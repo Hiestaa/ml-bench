@@ -4,6 +4,21 @@ from __future__ import unicode_literals
 
 from mlbExceptions import ProblemException
 
+"""
+Recepie to create a new problem.
+* Select your problem type(s). Create the class of your problem, and
+  inherit from `Optimization`, `Clustering`, `Classification` or any
+  combination of them.
+* Implement the `__init__` function. It must take at least the
+  parameters `name` and and `dataset` (it may or may not use it).
+  If may use any other keyword parameters that will be considered as
+  user-defined problem-related parameters. These arguments must be provided
+  with a default value.
+  The `super([...], self).__init__` function should be called with all these
+  argument's values
+* Implement the functions defined in the parent class, or classes.
+"""
+
 
 class BaseProblem(object):
     """

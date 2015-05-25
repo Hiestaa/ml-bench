@@ -11,7 +11,7 @@ from baseService import Service
 from tools import model
 
 """
-# solverInstances collection
+# solvers collection
 Stores the data related to an instanciated / configured solver
 (i.e.: ready to be run)
 Schema:
@@ -37,7 +37,7 @@ Schema:
 
 class SolversService(Service):
     def __init__(self, db):
-        super(SolversService, self).__init__(db, 'solverInstances')
+        super(SolversService, self).__init__(db, 'solvers')
 
     def schema(self):
         return {
@@ -51,7 +51,7 @@ class SolversService(Service):
 
     def insert(self, **kwargs):
         """
-        Insert a new document entry into the "solverInstances" collection.
+        Insert a new document entry into the "solvers" collection.
         The keywords arguments should match the schema defined for this
         entry. If the optional `_id` keyword argument is given, the `_id` of
         the document will not be automatically generated.

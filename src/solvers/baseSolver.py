@@ -3,8 +3,9 @@
 from __future__ import unicode_literals
 
 from multiprocessing import Process, Pipe
+import time
 
-from exceptions import SolverException
+from mlbExceptions import SolverException
 
 
 class BaseSolver(Process):
@@ -13,30 +14,55 @@ class BaseSolver(Process):
     of solver, common to all solver types.
     Any sub
     """
-    def __init__(self, solverType, problem, fullName, parameters={}):
+    def __init__(self, solverType, problem, name):
         """
         Initialize a new solver of the given type.
         * solverType:string, the type of this solver. Accepted values
           are: "optimizer", "clustering" or "classification".
         * problem:Problem subclass, that should implement the interface for
           this type of solver.
-        * fullName:string, name of this solver, for identification purposes.
-        * parameters:dict, the name of each parameter should be associated with
-          its value.
+        * name:string, name of this solver, for identification purposes.
         """
-        super(BaseSolver, self).__init__(name='process-%s' % fullName)
+        super(BaseSolver, self).__init__(name='process-%s' % name)
         if not solverType in ['optimizer', 'clusterer', 'classifier']:
             raise SolverException(
-                solverType, fullName, parameters,
+                solverType, name, parameters,
                 "Invalid solver type: %s" % solverType)
         self._solverType = solverType
-        self._fullName = fullName
+        self._name = name
         self._problem = problem
-        self._parameters = parameters
-        self._pipeInput, self._pipeOutput = Pipe()
+        self._logWriter, self._logReader = Pipe()
+        self._lastLogWrite = time.time()
+        self._vizWriter, self._vizReader = Pipe()
+        self._lastVizWrite = time.time()
 
-    def getPipeOutput(self):
-        return self._pipeOutput
+    def getLogOutput(self):
+        return self._logReader
+
+    def getVizOutput(self):
+        return self._vizReader
+
+    def _log(self, message, timeout=0.2, force=False):
+        """
+        Log a message to the log writer.
+        If `force` is left to False, the function **will not** be reliable.
+        If a message has been already sent in the last `timeout` second, the
+        message will be discarded to limit the write rate over the socket.
+        Set `force` to True to disable this behaviour (or `timeout` to 0)
+        """
+        if not force and time.time() - self._lastLogWrite > timeout:
+            self._logWriter.write(message)
+
+    def _viz(self, message, timeout=0.2, force=False):
+        """
+        Log a message to the viz writer.
+        If `force` is left to False, the function **will not** be reliable.
+        If a message has been already sent in the last `timeout` second, the
+        message will be discarded to limit the write rate over the socket.
+        Set `force` to True to disable this behaviour (or `timeout` to 0)
+        """
+        if not force and time.time() - self._lastVizWrite > timeout:
+            self._vizWriter.write(message)
 
     def run(self):
         """
