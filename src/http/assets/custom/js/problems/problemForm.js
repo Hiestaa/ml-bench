@@ -284,7 +284,7 @@ function ProblemForm($container, events, options) {
     }
 
     self.onClear = function () {
-        self._currentSolver = null;
+        self._currentProblem = null;
         self.onReset();
     }
 

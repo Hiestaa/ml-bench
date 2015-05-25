@@ -100,3 +100,11 @@ class SolversService(Service):
 
         # returns the solver
         raise gen.Return(solver)
+
+    def deleteByProblemId(self, problemId):
+        """
+        Removes all solution related to the given problem id.
+        * problemId:string, ObjectId compatible.
+        Returns a future that should be yielded to resolve it.
+        """
+        return self._collection.remove({'problemId': ObjectId(problemId)})

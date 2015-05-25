@@ -35,6 +35,18 @@ class ProblemsHandler(RequestHandler):
 
         self.write(json.dumps(problems))
 
+    @gen.coroutine
+    def deleteProblemById(self):
+        """
+        Route: `DELETE /api/problems/byId`
+        Remove the given problem id and all the related solvers.
+        The argument `_id` is required.
+        """
+        _id = self.get_argument('_id')
+        data = yield model.getService('problems').deleteById(_id)
+        data = yield model.getService('solvers').deleteByProblemId(_id)
+        self.write(json.dumps(data))
+
     def getProblemClasses(self):
         """
         Route: `GET /api/problems/implementations`
@@ -166,6 +178,14 @@ type interface." % (implementation))
     def post(self, action):
         actions = {
             'save': self.saveProblem
+        }
+        if action in actions:
+            return actions[action]()
+        raise HTTPError(404, 'Not Found')
+
+    def delete(self, action):
+        actions = {
+            'byId': self.deleteProblemById
         }
         if action in actions:
             return actions[action]()
