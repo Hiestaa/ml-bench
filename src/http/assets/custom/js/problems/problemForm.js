@@ -280,7 +280,6 @@ function ProblemForm($container, events, options) {
         self._$form.find('#input-name').removeClass('invalid');
         self._selectizeType.$control.removeClass('invalid');
         self._selectizeImplem.$control.removeClass('invalid');
-
     }
 
     self.onClear = function () {

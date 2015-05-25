@@ -1,5 +1,6 @@
 #main-container {
     height: calc(100% - 40px) !important;
+    overflow: auto;
 }
 
 #main-container > div {
@@ -70,4 +71,8 @@ small {
     color: #8C8C8C;
     margin-left: 25px;
     font-style: italic;
+}
+
+.uk-panel-box {
+    border: 1px solid #E5E5E5;
 }
