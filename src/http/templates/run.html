@@ -12,14 +12,14 @@
 <script src="/assets/custom/js/problems/problemForm.js"></script>
 <script type="text/javascript">
 $(function () {
-    var ui = new RunUI($('#ui-container'));
+    var ui = new RunUI($('#run-ui-container'));
     ui.initialize();
 })
 </script>
 {% end %}
 
 {% block content %}
-<div class="uk-grid" id="ui-container">
+<div class="uk-grid" id="run-ui-container">
     <div class="uk-panel uk-panel-box uk-width-1-1" id="run-panel">
         <h3 class="uk-panel-title">Select &amp; Run a Solver</h3>
         <form class="uk-form uk-grid">

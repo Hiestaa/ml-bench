@@ -1,4 +1,4 @@
-#ui-container pre.log-output {
+#run-ui-container pre.log-output {
     background-color: black;
     font-family: monospace;
     color: white;
@@ -7,10 +7,10 @@
     overflow: auto;
 }
 
-#ui-container .uk-grid {
+#run-ui-container.uk-grid {
     margin-left: 0px !important;
 }
 
-#ui-container #run-panel form > div{
+#run-ui-container #run-panel form > div{
     text-align: left;
 }

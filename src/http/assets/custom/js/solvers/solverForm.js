@@ -125,7 +125,7 @@ function SolverForm($container, events) {
             saved: self.onCreateProblem
         });
         self._problemForm.initialize();
-        self._problemFormModal = $.UIkit.modal('#create-problem-modal');
+        self._problemFormModal = $.UIkit.stackableModal('#create-problem-modal');
     }
 
     self.onSelectType = function (type) {

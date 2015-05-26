@@ -44,7 +44,7 @@ function RunUI($uiContainer) {
         });
         self._retrieveSolvers();
         self._solverForm.initialize();
-        self._solverFormModal = $.UIkit.modal('#create-solver-modal');
+        self._solverFormModal = $.UIkit.stackableModal('#create-solver-modal');
     }
 
     self.onSolverSelect = function (value, data) {
