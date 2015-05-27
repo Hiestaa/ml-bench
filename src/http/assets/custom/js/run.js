@@ -3,7 +3,6 @@ function LogView($viewContainer) {
     var self = this;
     self._$viewContainer = $viewContainer;
     self._$logOutput = self._$viewContainer.find(".log-output");
-
     self.initialize = function (initMessage) {
         self._$logOutput.html(initMessage || '===== LOG SYSTEM STARTED =====');
         self._$logOutput.append('<br>');

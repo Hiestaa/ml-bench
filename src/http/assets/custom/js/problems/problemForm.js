@@ -165,7 +165,10 @@ function ProblemForm($container, events, options) {
         self._selectizeImplem.addItem(implem);
 
         // fill in the name of the problem
-        self._$form.find('#input-name').val(problem.name);
+        if (!problem._generatedName)
+            self._$form.find('#input-name').val(problem.name);
+        else
+            self._$form.find('#input-name').val('');
 
         // fill in the parameters values
         for (var param_name in problem.parameters) {
@@ -197,14 +200,6 @@ function ProblemForm($container, events, options) {
         }
         else {
             self._selectizeImplem.$control.removeClass('invalid');
-        }
-        // name input
-        if (!self._$form.find('#input-name').val().trim()) {
-            self._$form.find('#input-name').addClass('invalid');
-            valid = false;
-        }
-        else {
-            self._$form.find('#input-name').removeClass('invalid')
         }
         // parameters (cannot be checked if no implem has been defined)
         if (!self._selectizeImplem.getValue().trim())

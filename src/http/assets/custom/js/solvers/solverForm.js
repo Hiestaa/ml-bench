@@ -220,8 +220,14 @@ function SolverForm($container, events) {
         self._selectizeType.addItem(typeToDisplay);
         self._selectizeImplem.addItem(implem);
 
+        self._selectizeProblem.clear();
+        self._selectizeProblem.addItem(solver.problemId);
+
         // fill in the name of the solver
-        self._$form.find('#input-name').val(solver.name);
+        if (!solver._generatedName)
+           self._$form.find('#input-name').val(solver.name);
+        else
+            self._$form.find('#input-name').val('');
 
         // fill in the parameters values
         for (var param_name in solver.parameters) {
@@ -261,14 +267,6 @@ function SolverForm($container, events) {
         }
         else {
             self._selectizeProblem.$control.removeClass('invalid');
-        }
-        // name input
-        if (!self._$form.find('#input-name').val().trim()) {
-            self._$form.find('#input-name').addClass('invalid');
-            valid = false;
-        }
-        else {
-            self._$form.find('#input-name').removeClass('invalid')
         }
         // parameters (cannot be checked if no implem has been defined)
         if (!self._selectizeImplem.getValue().trim())

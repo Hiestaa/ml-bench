@@ -117,10 +117,10 @@ class RunSolverHandler(WebSocketHandler):
         loops = 0
         start_t = time.time()
         # the loop will stop once the solver is killed or the task is finished
-        while self._runningSolver.is_alive():
+        while self._runningSolver.is_alive() or pipe.poll():
             loops += 1
             # wait 'till something is available to read
-            logging.info("Waiting for something to read on the pipe...")
+            logging.debug("Waiting for something to read on the pipe...")
             try:
                 wait_read(pipe.fileno(), timeout=1)
             except timeout:
@@ -129,7 +129,7 @@ class RunSolverHandler(WebSocketHandler):
             msg = pipe.recv()
             # send the json-encoded data
             data = json.dumps({name: msg})
-            logging.info("Sending data: %s" % (data))
+            logging.debug("Sending data: %s" % (data))
             self.write_message(data)
 
         # once the loop is stopped, log some messages

@@ -33,12 +33,10 @@ class SolversHandler(RequestHandler):
             solver['problemId'] = str(solver['problemId'])
             return solver
 
-        cursor = model.getService('solvers').getAll(
+        solvers = yield model.getService('solvers').getAll(
             orderBy={'implementation': 1, 'name': 1})
 
-        solvers = [
-            desobjectidfy(solver) for solver in
-            (yield cursor.to_list(length=None))]
+        solvers = [desobjectidfy(solver) for solver in solvers]
 
         self.write(json.dumps(solvers))
 
@@ -179,7 +177,7 @@ type interface." % (implementation))
             _id = yield model.getService('solvers').insert(**data)
         else:
             yield model.getService('solvers').set(_id, data)
-        data['_id'] = str(_id)
+        data = yield model.getService('solvers').getById(_id)
         self.write(json.dumps(data))
 
     def get(self, action):

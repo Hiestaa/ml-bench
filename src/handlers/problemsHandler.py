@@ -27,11 +27,8 @@ class ProblemsHandler(RequestHandler):
         Returns the list of existing problem objects
         TODO: Add pagination system
         """
-        cursor = model.getService('problems').getAll(
+        problems = yield model.getService('problems').getAll(
             orderBy={'implementation': 1, 'name': 1})
-
-        problems = [
-            problem for problem in (yield cursor.to_list(length=None))]
 
         self.write(json.dumps(problems))
 
@@ -163,7 +160,7 @@ type interface." % (implementation))
             _id = yield model.getService('problems').insert(**data)
         else:
             yield model.getService('problems').set(_id, data)
-        data['_id'] = str(_id)
+        data = yield model.getService('problems').getById(_id)
         self.write(json.dumps(data))
 
     def get(self, action):

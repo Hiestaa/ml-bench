@@ -144,7 +144,7 @@ class Service(object):
 
     def getAll(self, page=0, perPage=0, orderBy=None):
         """
-        Returns all documens available in this collection.
+        Returns all documents available in this collection.
         * page:int is the page number (default is 0)
         * perPage:int is the number of element per page (default displays all
           elements)

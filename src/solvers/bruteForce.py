@@ -43,8 +43,8 @@ class BruteForce(Optimizer):
         solution = [var[1] for var in self._scope]
         done = False
         while not done:
-            done = inc(solution)
             yield solution
+            done = inc(solution)
 
     def run(self):
         """
@@ -70,7 +70,7 @@ class BruteForce(Optimizer):
             if best is None or self._problem.isBetter(evaluation, best):
                 self._log(
                     '>>> [%.3f] %s is better!' % (evaluation, str(solution)),
-                    timeout=0.1)
+                    timeout=0.01)
                 best = evaluation
                 best_sol = solution
         self._log(

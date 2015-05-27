@@ -30,7 +30,8 @@ class Function(Optimization):
         self._dimension = int(dimension)
         self._expression = expression
         self._range = (int(rangeMin), int(rangeMax))
-        self._goal = 1 if str(goal)[:3] == 'max' or str(goal) == '1' else -1
+        self._goal = 1 if str(goal).lower()[:3] == 'max' or str(goal) == '1'\
+            else -1
 
     def evaluate(self, solution):
         """

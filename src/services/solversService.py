@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 from bson.objectid import ObjectId
+from string import Template
 
 from tornado import gen
 
@@ -42,7 +43,7 @@ class SolversService(Service):
     def schema(self):
         return {
             'type': True,
-            'name': True,
+            'name': False,
             'parameters': True,
             'problemId': True,
             'implementation': True,
@@ -73,6 +74,19 @@ class SolversService(Service):
                 post['_id'] = ObjectId(post['_id'])
         return self._collection.insert(self.validate(post))
 
+    def _computeName(self, solver):
+        """
+        Computes the name of this solver based on the name of the problem,
+        the type, implementation and parameters of the solver
+        """
+        template = Template("$type $implem, $params -- over $problem")
+        solver['_generatedName'] = True
+        return template.substitute(
+            type=solver['type'], implem=solver['implementation'],
+            problem=solver['problem']['name'],
+            params=', '.join(
+                '='.join(p) for p in solver['parameters'].iteritems()))
+
     @gen.coroutine
     def getById(self, _id, fields=None):
         """
@@ -98,10 +112,76 @@ class SolversService(Service):
             solver['problemId'])
 
         # create the `problem` entry in the solver.
+        solver['problemId'] = str(solver['problemId'])
         solver['problem'] = problem
+
+        if ('name' in solver or not solver['name']) \
+                and fields is None:
+            solver['name'] = self._computeName(solver)
 
         # returns the solver
         raise gen.Return(solver)
+
+    @gen.coroutine
+    def getByIds(self, ids, fields=None):
+        """
+        Get a list of documents that are matching the given ids.
+        Returns a future object. Yield the returned future to get the
+        actual result.
+        """
+        query = {
+            '_id': {
+                '$in': [ObjectId(_id) if not isinstance(_id, ObjectId) else _id
+                        for _id in ids]}
+        }
+        if fields is not None:
+            cur = self._collection.find(
+                query, self.validate({f: True for f in fields}))
+        else:
+            cur = self._collection.find(query)
+        solvers = []
+        for solver in (yield cursor.to_list(length=None)):
+            # retrieve the linked problem
+            problem = yield model.getService('problems').getById(
+                solver['problemId'])
+            solver['problemId'] = str(solver['problemId'])
+            solver['problem'] = problem
+            if (not 'name' in solver or not solver['name'])\
+                    and fields is None:
+                solver['name'] = self._computeName(solver)
+            solvers.append(solver)
+
+        raise gen.Return(solvers)
+
+    @gen.coroutine
+    def getAll(self, page=0, perPage=0, orderBy=None):
+        """
+        Returns all documents available in this collection.
+        * page:int is the page number (default is 0)
+        * perPage:int is the number of element per page (default displays all
+          elements)
+        * orderBy: dict allow to select on which field to perform the ordering
+        Returns a future. Call `yield` operator to resolve it.
+        """
+        if orderBy is None:
+            cursor = self._collection.find({})
+        else:
+            cursor = self._collection.find({'$query': {}, '$orderby': orderBy})
+        if page > 0 and perPage > 0:
+            cursor.skip((page - 1) * perPage).limit(perPage)
+
+        solvers = []
+        for solver in (yield cursor.to_list(length=None)):
+            # retrieve the linked problem
+            problem = yield model.getService('problems').getById(
+                solver['problemId'])
+            solver['problemId'] = str(solver['problemId'])
+            solver['problem'] = problem
+            if not 'name' in solver or not solver['name']:
+                solver['name'] = self._computeName(solver)
+            solvers.append(solver)
+
+        raise gen.Return(solvers)
 
     def deleteByProblemId(self, problemId):
         """
