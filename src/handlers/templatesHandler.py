@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-from tornado.web import RequestHandler, HTTPError, authenticated
+from tornado.web import RequestHandler, HTTPError
 from tornado import gen
 
 import logging

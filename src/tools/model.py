@@ -65,12 +65,7 @@ server (%d) exceeded." % (10))
 
         self._db = self._connection[Conf['database']['dbName']]
         self._db.add_son_manipulator(ObjectIdManipulator())
-
-        self._services = {
-            # 'video':  VideoService(self._db),
-            # 'tag': TagService(self._db),
-            # 'album': AlbumService(self._db)
-        }
+        self._services = {}
 
     def getService(self, serviceName):
         """
@@ -94,6 +89,12 @@ server (%d) exceeded." % (10))
             serviceModule, ucFirst(serviceName + "Service"))(self._db)
         # return the instance
         return self._services[serviceName]
+
+    def __getattr__(self, name):
+        if not name[0] == '_':
+            return self.getService(name)
+        else:
+            return object.__getattribute__(self, name)
 
 
 # this module is a singleton

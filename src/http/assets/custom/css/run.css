@@ -14,3 +14,8 @@
 #run-ui-container #run-panel form > div{
     text-align: left;
 }
+
+#run-ui-container #run-panel #solver-description span.sep {
+    padding-left: 2em;
+    padding-right: 2em;
+}

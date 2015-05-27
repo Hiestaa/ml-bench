@@ -22,13 +22,14 @@ $(function () {
 <div class="uk-grid" id="run-ui-container">
     <div class="uk-panel uk-panel-box uk-width-1-1" id="run-panel">
         <h3 class="uk-panel-title">Select &amp; Run a Solver</h3>
-        <form class="uk-form uk-grid">
+        <form class="uk-form uk-grid" onsubmit="return false;">
             <div class="uk-width-7-10 uk-width-8-10 uk-width-large-9-10">
                 <select id="select-solver"></select>
             </div>
             <div class="uk-width-1-10">
-                <button class="uk-button uk-button-primary">Run!</button>
+                <button class="uk-button uk-button-primary" id="run-solver">Run!</button>
             </div>
+            <div class="uk-width-1-1" id="solver-description"></div>
         </form>
     </div>
     <div class="uk-panel uk-panel-box uk-width-1-1 uk-width-medium-1-2">
@@ -49,7 +50,7 @@ $(function () {
             No measures defined.
         </canvas>
     </div>
-    <div class="uk-panel uk-panel-box uk-width-1-1">
+    <div class="uk-panel uk-panel-box uk-width-1-1" id="log-panel">
         <h3 class="uk-panel-title">Log Output</h3>
         <pre class="log-output">
             Logging output will go there...

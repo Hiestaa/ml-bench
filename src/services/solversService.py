@@ -86,11 +86,13 @@ class SolversService(Service):
         """
         # retrieve the solver
         if fields is None:
-            solver = yield self._collection.find_one({'_id': _id})
+            solver = yield self._collection.find_one({'_id': ObjectId(_id)})
         else:
             solver = yield self._collection.find_one(
-                {'_id': _id},
+                {'_id': ObjectId(_id)},
                 self.validate({f: True for f in fields}, strict=False))
+        if solver is None:
+            raise gen.Return(None)
         # retrieve the linked problem
         problem = yield model.getService('problems').getById(
             solver['problemId'])

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from optimization import Optimization
 
-DEFAULT_EXP = 'sum(x[i] ** i for x in xrange(len(x)))'
+DEFAULT_EXP = 'sum(x[i] ** i for i in xrange(len(x)))'
 
 
 class Function(Optimization):
@@ -23,13 +23,13 @@ class Function(Optimization):
     """
     def __init__(self, name, dataset, expression=DEFAULT_EXP,
                  dimension=10, rangeMin=0, rangeMax=100, goal='minimize'):
-        super(Optimization, self).__init__(
-            name=name, dataset=None,
+        super(Function, self).__init__(
+            name=name, dataset=dataset,
             dimension=dimension, rangeMin=rangeMin, rangeMax=rangeMax,
             goal=goal)
-        self._dimension = dimension
+        self._dimension = int(dimension)
         self._expression = expression
-        self._range = (rangeMin, rangeMax)
+        self._range = (int(rangeMin), int(rangeMax))
         self._goal = 1 if str(goal)[:3] == 'max' or str(goal) == '1' else -1
 
     def evaluate(self, solution):
@@ -39,7 +39,7 @@ class Function(Optimization):
         * solution should be an array of float, of the same size than the array
           returned by the `getScope` function.
         """
-        return eval(self._expression, {x: solution})
+        return eval(self._expression, {'x': solution})
 
     def isBetter(self, evaluation1, evaluation2):
         return evaluation1 * self._goal > evaluation2 * self._goal

@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import json
+import time
 
 from optimizer import Optimizer
 
@@ -17,9 +18,7 @@ class BruteForce(Optimizer):
       of solution found.
     """
     def __init__(self, name, problem, step=1.0):
-        super(BruteForce, self).__init__(
-            solverType='optimizer', name=name,
-            problem=problem)
+        super(BruteForce, self).__init__(name=name, problem=problem)
         self._step = float(step)
         self._scope = problem.getScope()
 
@@ -56,12 +55,14 @@ class BruteForce(Optimizer):
         this solution).
         The latter is a boolean indicating if the process is terminated.
         """
+        print "Starting Bruteforce optimizer."
         best = None
         best_sol = None
+        start_t = time.time()
         for solution in self._genNext():
             evaluation = self._problem.evaluate(solution)
             self._log(
-                'Evaluating: [%.3f] %s' % (evaluation, str(solution)))
+                'Evaluation: [%.3f] %s' % (evaluation, str(solution)))
             self._viz(json.dumps({
                 'current': {'solution': solution, 'evaluation': evaluation},
                 'best': {'solution': best_sol, 'evaluation': best}
@@ -73,4 +74,6 @@ class BruteForce(Optimizer):
                 best = evaluation
                 best_sol = solution
         self._log(
-            'Done. Best overall: [%.3f] %s' % (best, best_sol))
+            'Done. Best overall: [%.3f] %s' % (best, best_sol), force=True)
+        print "Bruteforce optimizing task performed in %.3fs" \
+            % (time.time() - start_t)

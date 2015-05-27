@@ -31,9 +31,9 @@ class BaseSolver(Process):
         self._solverType = solverType
         self._name = name
         self._problem = problem
-        self._logWriter, self._logReader = Pipe()
+        self._logReader, self._logWriter = Pipe(False)
         self._lastLogWrite = time.time()
-        self._vizWriter, self._vizReader = Pipe()
+        self._vizReader, self._vizWriter = Pipe(False)
         self._lastVizWrite = time.time()
 
     def getLogOutput(self):
@@ -42,7 +42,7 @@ class BaseSolver(Process):
     def getVizOutput(self):
         return self._vizReader
 
-    def _log(self, message, timeout=0.2, force=False):
+    def _log(self, message, timeout=0.1, force=False):
         """
         Log a message to the log writer.
         If `force` is left to False, the function **will not** be reliable.
@@ -50,10 +50,16 @@ class BaseSolver(Process):
         message will be discarded to limit the write rate over the socket.
         Set `force` to True to disable this behaviour (or `timeout` to 0)
         """
-        if not force and time.time() - self._lastLogWrite > timeout:
-            self._logWriter.write(message)
+        # print("[LOG][to=%.3fs][force=%s] %s"
+        #       % (timeout, str(force), message))
+        if force or time.time() - self._lastLogWrite > timeout:
+            self._logWriter.send(message)
+            self._lastLogWrite = time.time()
+#         else:
+#             print "Discarded message, time since last message is: \
+# %.3fs < %.3fs" % (time.time() - self._lastLogWrite, timeout)
 
-    def _viz(self, message, timeout=0.2, force=False):
+    def _viz(self, message, timeout=0.1, force=False):
         """
         Log a message to the viz writer.
         If `force` is left to False, the function **will not** be reliable.
@@ -61,8 +67,11 @@ class BaseSolver(Process):
         message will be discarded to limit the write rate over the socket.
         Set `force` to True to disable this behaviour (or `timeout` to 0)
         """
-        if not force and time.time() - self._lastVizWrite > timeout:
-            self._vizWriter.write(message)
+        # print("[VIZ][to=%.3fs][force=%s] %s"
+        #               % (timeout, str(force), message))
+        if force or time.time() - self._lastVizWrite > timeout:
+            self._vizWriter.send(message)
+            self._lastVizWrite = time.time()
 
     def run(self):
         """
