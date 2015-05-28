@@ -9,7 +9,6 @@ import tornado
 from tornado.web import Application
 from tornado.ioloop import IOLoop
 
-
 from handlers.templatesHandler import TemplatesHandler
 from handlers.problemsHandler import ProblemsHandler
 from handlers.solversHandler import SolversHandler

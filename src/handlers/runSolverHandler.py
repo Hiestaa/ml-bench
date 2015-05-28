@@ -101,6 +101,7 @@ class RunSolverHandler(WebSocketHandler):
     def on_close(self):
         logging.info("Websocket closed.")
 
+    @gen.coroutine
     def pipe2SocketForwarder(self, name, pipe):
         """
         Forward data read from the log and visualization pipes to the
@@ -122,15 +123,19 @@ class RunSolverHandler(WebSocketHandler):
             # wait 'till something is available to read
             logging.debug("Waiting for something to read on the pipe...")
             try:
-                wait_read(pipe.fileno(), timeout=1)
+                wait_read(pipe.fileno(), timeout=0)
             except timeout:
-                continue  # no data read, no data to send
+                # no data to read, no data to send, just wait and try again
+                yield gen.sleep(0.1)
+                continue
             # read the data (shouldn't block as called wait_read)
             msg = pipe.recv()
             # send the json-encoded data
             data = json.dumps({name: msg})
             logging.debug("Sending data: %s" % (data))
             self.write_message(data)
+            # return control to tornado's ioloop
+            yield gen.sleep(0)
 
         # once the loop is stopped, log some messages
         logging.info("Stopping forwarder -- running solver is not alive \
