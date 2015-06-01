@@ -2,10 +2,9 @@
 
 from __future__ import unicode_literals
 
-import json
 import time
 
-from optimizer import Optimizer
+from optimizer import Optimizer, OptimizationSolution
 
 
 class BruteForce(Optimizer):
@@ -20,7 +19,9 @@ class BruteForce(Optimizer):
     def __init__(self, name, problem, step=1.0):
         super(BruteForce, self).__init__(name=name, problem=problem)
         self._step = float(step)
-        self._scope = problem.getScope()
+        self._bestSol = None
+        self._solGenerator = self._genNext()
+        print "Starting Bruteforce optimizer."
 
     def _genNext(self):
         """
@@ -46,7 +47,7 @@ class BruteForce(Optimizer):
             yield solution
             done = inc(solution)
 
-    def run(self):
+    def step(self):
         """
         Visualization data exchange protocol:
         Json encoded object having 3 fields: `current` `best` and `done`
@@ -55,25 +56,36 @@ class BruteForce(Optimizer):
         this solution).
         The latter is a boolean indicating if the process is terminated.
         """
-        print "Starting Bruteforce optimizer."
-        best = None
-        best_sol = None
-        start_t = time.time()
-        for solution in self._genNext():
-            evaluation = self._problem.evaluate(solution)
+        # get the next possible solution. If the generator has finished
+        # (i.e.: all search space has been explored), then raise the best
+        # solution found.
+        try:
+            solution = self._solGenerator.next()
+        except StopIteration:
             self._log(
-                'Evaluation: [%.3f] %s' % (evaluation, str(solution)))
-            self._viz(json.dumps({
-                'current': {'solution': solution, 'evaluation': evaluation},
-                'best': {'solution': best_sol, 'evaluation': best}
-            }))
-            if best is None or self._problem.isBetter(evaluation, best):
-                self._log(
-                    '>>> [%.3f] %s is better!' % (evaluation, str(solution)),
-                    timeout=0.01)
-                best = evaluation
-                best_sol = solution
+                'Done. Best overall: %s [%.3f]'
+                % (str(self._bestSol[0]), self._bestSol[1]), force=True,
+                level=4)
+            print "Bruteforce optimizing task performed in %.3fs" \
+                % (time.time() - self._start_t)
+            raise OptimizationSolution(*self._bestSol)
+
+        # if there is a solution to evaluate, do it.
+        evaluation = self._problem.evaluate(solution)
+        # if the evaluated solution is better than the best found
+        # up to this point, save it.
+        if self._bestSol is None or self._problem.isBetter(
+                evaluation, self._bestSol[1]):
+            self._log(
+                '>>> [%.3f] %s is better!' % (evaluation, str(solution)),
+                timeout=0.01, level=3)
+            self._bestSol = (solution, evaluation)
+
+        # a bit of logging
         self._log(
-            'Done. Best overall: [%.3f] %s' % (best, best_sol), force=True)
-        print "Bruteforce optimizing task performed in %.3fs" \
-            % (time.time() - start_t)
+            'Evaluation: %s [%.3f]' % (str(solution), evaluation), level=1)
+        self._viz({
+            'current': {'solution': solution, 'evaluation': evaluation},
+            'best': {'solution': self._bestSol[0],
+                     'evaluation': self._bestSol[1]}
+        })

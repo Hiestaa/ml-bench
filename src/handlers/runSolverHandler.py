@@ -112,9 +112,11 @@ class RunSolverHandler(WebSocketHandler):
             <name>: <object sent over the pipe>
         }
         Where `<name>` can be either "log" or "viz".
+        The `log` object will be a dict having the key `message`
+        (the actual log message) and `level` which by default is 0.
         The format of the objects are defined in each solver.
         """
-        logging.info("Starting pipe to socket forwarder...")
+        logging.info("Starting %s to socket forwarder..." % name)
         loops = 0
         start_t = time.time()
         # the loop will stop once the solver is killed or the task is finished

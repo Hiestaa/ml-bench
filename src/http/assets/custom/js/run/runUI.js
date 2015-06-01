@@ -1,19 +1,3 @@
-/* Handles the log messages received on the websocket. */
-function LogView($viewContainer) {
-    var self = this;
-    self._$viewContainer = $viewContainer;
-    self._$logOutput = self._$viewContainer.find(".log-output");
-    self.initialize = function (initMessage) {
-        self._$logOutput.html(initMessage || '===== LOG SYSTEM STARTED =====');
-        self._$logOutput.append('<br>');
-    }
-
-    self.onLogMessage = function (message) {
-        self._$logOutput.append(message + '<br>');
-        self._$logOutput.scrollTop(self._$logOutput[0].scrollHeight);
-    }
-}
-
 function RunUI($uiContainer) {
     var self = this;
 
@@ -70,7 +54,7 @@ function RunUI($uiContainer) {
     self._onSocketMessage = function (evt) {
         var data = JSON.parse(evt.data);
         if (data.log) {
-            self._logView.onLogMessage(data.log);
+            self._logView.onLogMessage(data.log.message, data.log.level);
         }
     }
 

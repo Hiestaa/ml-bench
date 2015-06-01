@@ -8,6 +8,26 @@ import time
 from mlbExceptions import SolverException
 
 
+class Solution(Exception):
+    """
+    Base class for the solution of any problem, found by any type of solver.
+    Raise an instance of this class (or any sub-class) at any time during
+    the execution of the solving algorithm when the solution is found.
+    This will terminate the solver process, save the solution and send it to
+    the client-side code.
+    """
+    def __init__(self):
+        super(Solution, self).__init__()
+
+    def toJSON(self):
+        """
+        This function is supposed to return a JSON-compatible dict-like object.
+        It will be saved into the `solutions` collection into db along with all
+        the problem and solver related informations.
+        """
+        raise NotImplementedError()
+
+
 class BaseSolver(Process):
     """
     Represents any solver class algorithm. This defines as well the interface
@@ -33,6 +53,7 @@ class BaseSolver(Process):
         self._problem = problem
         self._logReader, self._logWriter = Pipe(False)
         self._lastLogWrite = time.time()
+        self._ignoredLogInfoSent = False
         self._vizReader, self._vizWriter = Pipe(False)
         self._lastVizWrite = time.time()
 
@@ -42,22 +63,26 @@ class BaseSolver(Process):
     def getVizOutput(self):
         return self._vizReader
 
-    def _log(self, message, timeout=0.1, force=False):
+    def _log(self, message, timeout=0.1, force=False, level=0):
         """
-        Log a message to the log writer.
+        Log a message to the log writer. The message can be any json-dumpable
+        object.
         If `force` is left to False, the function **will not** be reliable.
         If a message has been already sent in the last `timeout` second, the
         message will be discarded to limit the write rate over the socket.
         Set `force` to True to disable this behaviour (or `timeout` to 0)
+        `level` is the level of the log message, where higher values mean more
+        critical message. Values should range in [0, 10].
         """
         # print("[LOG][to=%.3fs][force=%s] %s"
         #       % (timeout, str(force), message))
         if force or time.time() - self._lastLogWrite > timeout:
-            self._logWriter.send(message)
+            self._logWriter.send({'message': message, 'level': level})
             self._lastLogWrite = time.time()
-#         else:
-#             print "Discarded message, time since last message is: \
-# %.3fs < %.3fs" % (time.time() - self._lastLogWrite, timeout)
+            self._ignoredLogInfoSent = False
+        elif not self._ignoredLogInfoSent:
+            self._ignoredLogInfoSent = True
+            self._logWriter.send({'message': '[...]', 'level': 0})
 
     def _viz(self, message, timeout=0.1, force=False):
         """
@@ -73,12 +98,57 @@ class BaseSolver(Process):
             self._vizWriter.send(message)
             self._lastVizWrite = time.time()
 
-    def run(self):
+    def measure(self, lastMeasure=None):
         """
-        Override this function in the subclasses, this will run the
-        algorithm on a different system process.
-        Data to be sent to the visualization code should be written at the
-        input-side (parent-side) of the pipe and will be forwarded to the
-        websocket connection by the websocket handler.
+        Save data related to the state of the algorithm at this exact moment.
+        This function will be called automatically if the 'step-by-step'
+        implementation of the solver is used. Otherwise, it's up to the
+        programmer to call this function when relevant.
+        * lastMeasure:mixed, the previous measure performed. None if
+          this function is called for the first time.
+        Returns a dict where measurement keys are asociated with corresponding
+        values.
         """
         raise NotImplementedError()
+
+    def step(self):
+        """
+        If the 'step-by-step' implementation of the solver is used, this
+        function will be called automatically to perform one step of the
+        solving process. `measure` will automatically be called between two
+        steps.
+        Return the boolean True to end the process (if no solution is found),
+        or raise a `Solution` instance.
+        """
+        raise NotImplementedError()
+
+    def solve(self):
+        """
+        There is two ways to implement a solver. The first is 'iterative',
+        'step-by-step'. For this method, override the `step` function
+        that will be called iteratively until the algorithm is
+        done. This enable automatic performance and time measurements
+        (via the `measure` function that requires to be implemented as well).
+
+        The second method is to override this function (`solve`), in that case
+        a single call should provide at the end the solution to the algorithm.
+        This function will only be called once and no measurement will be
+        performed automatically. You should call the function `measure` by
+        yourself when relevant for your algorithm.
+
+        In any case, to return the solution, raise the one of the subclass of
+        the `Solution` class.
+
+        To send data to the visualization code or the in-app log window, use
+        respectively the `_log` and `_viz` functions, the messages sent here
+        will be json-dumped and sent over the websocket to the client-side code
+        """
+        measure = None
+        while not self.step():
+            measure = self.measure(measure)
+
+    def run(self):
+        try:
+            self.solve()
+        except Solution as sol:
+            print sol

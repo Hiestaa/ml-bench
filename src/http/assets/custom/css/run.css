@@ -19,3 +19,44 @@
     padding-left: 2em;
     padding-right: 2em;
 }
+
+#run-ui-container pre.log-output .log {
+    display: block;
+}
+
+#run-ui-container pre.log-output .log.level-0 {
+    color: #8C8C8C;
+}
+#run-ui-container pre.log-output .log.level-1 {
+    color: #ffffff;
+}
+#run-ui-container pre.log-output .log.level-2 {
+    color: #00ffff;
+}
+#run-ui-container pre.log-output .log.level-3 {
+    color: #00ff00;
+}
+#run-ui-container pre.log-output .log.level-4 {
+    color: #ff00ff;
+}
+#run-ui-container pre.log-output .log.level-5 {
+    color: #E19448;
+}
+#run-ui-container pre.log-output .log.level-6 {
+    color: #fd6267;
+}
+#run-ui-container pre.log-output .log.level-7 {
+    color: #ffff00;
+}
+#run-ui-container pre.log-output .log.level-8 {
+    color: #ff7f00;
+    font-weight: bold
+}
+#run-ui-container pre.log-output .log.level-9 {
+    color: #ff0000;
+}
+
+#run-ui-container pre.log-output .log.level-10 {
+    color: #ff0000;
+    font-weight: bold
+}

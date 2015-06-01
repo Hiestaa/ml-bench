@@ -7,7 +7,8 @@
 {% end %}
 
 {% block js %}
-<script type="text/javascript" src="/assets/custom/js/run.js"></script>
+<script type="text/javascript" src="/assets/custom/js/run/runUI.js"></script>
+<script type="text/javascript" src="/assets/custom/js/run/logView.js"></script>
 <script src="/assets/custom/js/solvers/solverForm.js"></script>
 <script src="/assets/custom/js/problems/problemForm.js"></script>
 <script type="text/javascript">
@@ -51,15 +52,17 @@ $(function () {
         </canvas>
     </div>
     <div class="uk-panel uk-panel-box uk-width-1-1" id="log-panel">
-        <h3 class="uk-panel-title">Log Output</h3>
+        <div class="uk-grid">
+            <div class="uk-width-1-1 uk-width-small-7-10 uk-width-medium-4-5 uk-width-large-9-10">
+                <h3 class="uk-panel-title">Log Output</h3>
+            </div>
+            <div class="uk-width-1-1 uk-width-small-3-10 uk-width-medium-1-5 uk-width-large-1-10">
+                <select placeholder="Hide below..." id="select-level">
+                </select>
+            </div>
+        </div>
         <pre class="log-output">
             Logging output will go there...
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-            tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-            consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-            cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         </pre>
     </div>
 </div>
