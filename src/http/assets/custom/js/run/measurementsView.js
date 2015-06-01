@@ -60,6 +60,7 @@ function MeasurementsView ($viewContainer) {
 
     self.initialize = function () {
         self._$visualization.html('');
+        self._$toggleMeasureContainer.html('');
 
         self._groups = new vis.DataSet();
         self._dataset = new vis.DataSet()

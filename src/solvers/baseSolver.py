@@ -124,7 +124,8 @@ class BaseSolver(Process):
         implementation of the solver is used. Otherwise, it's up to the
         programmer to call this function when relevant.
         When overriding this function, at the end of the measurement process,
-        call: `super(<ClassName>, self).measure(lastMeasure, currentMeasure)`
+        call:
+        `return super(<ClassName>, self).measure(lastMeasure, currentMeasure)`
         to let the parent class add required field and send the data over the
         socket and save them for later use.
         Measurements names starting with `_` are reserved (may be overrided).

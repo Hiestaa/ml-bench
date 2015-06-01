@@ -50,10 +50,10 @@ class BruteForce(Optimizer):
     def measure(self, lastMeasure=None, m={}):
         m['best'] = self._bestSol[1]
         if lastMeasure is not None and 'best' in lastMeasure:
-            m['valueIncrease'] = self._bestSol[1] - lastMeasure['best']
+            m['valueIncrease'] = self._bestSol[1] - lastMeasure['best']  # doesn't work
         else:
-            m['valueIncrease'] = self._bestSol[1]
-        super(BruteForce, self).measure(lastMeasure=lastMeasure, m=m)
+            m['valueIncrease'] = self._bestSol[1]  # doesn't work
+        return super(BruteForce, self).measure(lastMeasure=lastMeasure, m=m)
 
     def step(self):
         """
