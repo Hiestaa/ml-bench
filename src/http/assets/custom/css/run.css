@@ -60,3 +60,7 @@
     color: #ff0000;
     font-weight: bold
 }
+
+#measurements-panel .uk-grid {
+    margin-bottom: 5px;
+}

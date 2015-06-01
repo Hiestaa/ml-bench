@@ -33,12 +33,10 @@ function LogView($viewContainer) {
         onItemAdd: self.onSelectLevel
     });
     self._selectizeLevel = self._$viewContainer.find("#select-level")[0].selectize
-    for (var i = 0; i <= 10; i++) {
+    for (var i = 1; i <= 10; i++) {
         self._selectizeLevel.addOption({
-            text: i == 0 ? "None" : "Level " + i,
+            text: "Level " + i,
             value: i
         });
-        if (i == 0)
-            self._selectizeLevel.addItem(0);
     };
 }

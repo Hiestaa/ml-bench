@@ -13,6 +13,7 @@ function RunUI($uiContainer) {
     self._webSocket = null;
 
     self._logView = null;
+    self._measurementsView = null;
 
     self._retrieveSolvers = function () {
         self._selectizeSolver.clear();
@@ -56,6 +57,9 @@ function RunUI($uiContainer) {
         if (data.log) {
             self._logView.onLogMessage(data.log.message, data.log.level);
         }
+        if (data.msr) {
+            self._measurementsView.onMeasure(data.msr);
+        }
     }
 
     self.initialize = function () {
@@ -76,6 +80,7 @@ function RunUI($uiContainer) {
         self._$uiContainer.find('#run-solver').click(self.onRun);
 
         self._logView = new LogView($('#log-panel'));
+        self._measurementsView = new MeasurementsView($('#measurements-panel'));
     }
 
     self.onSolverSelect = function (value, data) {
@@ -128,6 +133,7 @@ function RunUI($uiContainer) {
         self._webSocket.onmessage = self._onSocketMessage
         self._webSocket.onopen = function () {
             self._logView.initialize();
+            self._measurementsView.initialize();
             var solverId = self._selectizeSolver.getValue();
             if (!solverId.trim()) {
                 $.UIkit.notify("No solver was specified to be run!", {status: 'danger'});

@@ -4,11 +4,14 @@
 <link rel="stylesheet" type="text/css" href="/assets/custom/css/run.css">
 <link rel="stylesheet" href="/assets/custom/css/solvers/solverForm.css">
 <link rel="stylesheet" href="/assets/custom/css/problems/problemForm.css">
+<link rel="stylesheet" href="/assets/vis/vis.min.css">
 {% end %}
 
 {% block js %}
+<script src="/assets/vis/vis.min.js"></script>
 <script type="text/javascript" src="/assets/custom/js/run/runUI.js"></script>
 <script type="text/javascript" src="/assets/custom/js/run/logView.js"></script>
+<script type="text/javascript" src="/assets/custom/js/run/measurementsView.js"></script>
 <script src="/assets/custom/js/solvers/solverForm.js"></script>
 <script src="/assets/custom/js/problems/problemForm.js"></script>
 <script type="text/javascript">
@@ -45,11 +48,19 @@ $(function () {
             No solution visualization defined.
         </canvas>
     </div>
-    <div class="uk-panel uk-panel-box uk-width-1-1">
-        <h3 class="uk-panel-title">Measures</h3>
-        <canvas>
-            No measures defined.
-        </canvas>
+    <div class="uk-panel uk-panel-box uk-width-1-1" id="measurements-panel">
+        <div class="uk-grid">
+            <div class="uk-width-1-1 uk-width-small-4-10 uk-width-medium-6-10 uk-width-large-7-10">
+                <h3 class="uk-panel-title">Measures</h3>
+            </div>
+            <div class="uk-width-1-1 uk-width-small-6-10 uk-width-medium-4-10 uk-width-large-3-10">
+                <div class="uk-button-group" data-uk-button-checkbox id="toggle-measure">
+                </div>
+            </div>
+        </div>
+        <div id="measurements-vis">
+            Measurements will be displayed here.
+        </div>
     </div>
     <div class="uk-panel uk-panel-box uk-width-1-1" id="log-panel">
         <div class="uk-grid">
@@ -66,6 +77,8 @@ $(function () {
         </pre>
     </div>
 </div>
+<div id="visualization"></div>
+
 
 <div id="create-solver-modal" class="uk-modal">
     <div class="uk-modal-dialog uk-modal-dialog-large">

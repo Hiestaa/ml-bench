@@ -47,6 +47,14 @@ class BruteForce(Optimizer):
             yield solution
             done = inc(solution)
 
+    def measure(self, lastMeasure=None, m={}):
+        m['best'] = self._bestSol[1]
+        if lastMeasure is not None and 'best' in lastMeasure:
+            m['valueIncrease'] = self._bestSol[1] - lastMeasure['best']
+        else:
+            m['valueIncrease'] = self._bestSol[1]
+        super(BruteForce, self).measure(lastMeasure=lastMeasure, m=m)
+
     def step(self):
         """
         Visualization data exchange protocol:

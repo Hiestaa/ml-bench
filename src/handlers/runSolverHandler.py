@@ -59,7 +59,10 @@ class RunSolverHandler(WebSocketHandler):
             self.pipe2SocketForwarder, 'log', solverInstance.getLogOutput())
         vizThread = gevent.spawn(
             self.pipe2SocketForwarder, 'viz', solverInstance.getVizOutput())
-        gevent.joinall([logThread, vizThread])
+        msrThread = gevent.spawn(
+            self.pipe2SocketForwarder, 'msr',
+            solverInstance.getMeasureOutput())
+        gevent.joinall([logThread, vizThread, msrThread])
 
     def onKillRunningSolver(self):
         if self._runningSolver:
@@ -111,9 +114,10 @@ class RunSolverHandler(WebSocketHandler):
         {
             <name>: <object sent over the pipe>
         }
-        Where `<name>` can be either "log" or "viz".
+        Where `<name>` can be either "log", "viz" or "msr".
         The `log` object will be a dict having the key `message`
         (the actual log message) and `level` which by default is 0.
+        The `msr` object will be a dict having at least the key `_time`.
         The format of the objects are defined in each solver.
         """
         logging.info("Starting %s to socket forwarder..." % name)

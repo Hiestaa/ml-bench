@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from multiprocessing import Process, Pipe
 import time
+import random
 
 from mlbExceptions import SolverException
 
@@ -56,12 +57,18 @@ class BaseSolver(Process):
         self._ignoredLogInfoSent = False
         self._vizReader, self._vizWriter = Pipe(False)
         self._lastVizWrite = time.time()
+        self._msrReader, self._msrWriter = Pipe(False)
+        self._lastMsrWrite = time.time()
+        self._start_t = time.time()
 
     def getLogOutput(self):
         return self._logReader
 
     def getVizOutput(self):
         return self._vizReader
+
+    def getMeasureOutput(self):
+        return self._msrReader
 
     def _log(self, message, timeout=0.1, force=False, level=0):
         """
@@ -98,18 +105,44 @@ class BaseSolver(Process):
             self._vizWriter.send(message)
             self._lastVizWrite = time.time()
 
-    def measure(self, lastMeasure=None):
+    def _msr(self, message, timeout=1.0, force=False):
+        """
+        Log measured data to the measurement pip writer.
+        If `force` is left to False, the function **will not** be reliable.
+        If a message has been already sent in the last `timeout` second, the
+        message will be discarded to limit the write rate over the socket.
+        Set `force` to True to disable this behaviour (or `timeout` to 0)
+        """
+        if force or time.time() - self._lastMsrWrite > timeout:
+            self._msrWriter.send(message)
+            self._lastMsrWrite = time.time()
+
+    def measure(self, lastMeasure=None, m={}):
         """
         Save data related to the state of the algorithm at this exact moment.
         This function will be called automatically if the 'step-by-step'
         implementation of the solver is used. Otherwise, it's up to the
         programmer to call this function when relevant.
+        When overriding this function, at the end of the measurement process,
+        call: `super(<ClassName>, self).measure(lastMeasure, currentMeasure)`
+        to let the parent class add required field and send the data over the
+        socket and save them for later use.
+        Measurements names starting with `_` are reserved (may be overrided).
+        Note: using the `step-by-step` method, the `measure` function will
+        ALWAYS be called AFTER the first step.
         * lastMeasure:mixed, the previous measure performed. None if
           this function is called for the first time.
+        * m:dict, any measurement data already performed
         Returns a dict where measurement keys are asociated with corresponding
         values.
         """
-        raise NotImplementedError()
+        m['_time'] = time.time()
+        if lastMeasure is not None:
+            m['_stepDuration'] = time.time() - lastMeasure['_time']
+        else:
+            m['_stepDuration'] = time.time() - self._start_t
+        self._msr(m)
+        return m
 
     def step(self):
         """
@@ -145,7 +178,7 @@ class BaseSolver(Process):
         """
         measure = None
         while not self.step():
-            measure = self.measure(measure)
+            measure = self.measure(lastMeasure=measure)
 
     def run(self):
         try:
