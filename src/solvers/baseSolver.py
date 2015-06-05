@@ -127,7 +127,7 @@ class BaseSolver(Process):
         """
         self._startTime = time.time()
 
-    def measure(self, lastMeasure=None, m={}):
+    def measure(self, lastMeasure=None, m=None):
         """
         Save data related to the state of the algorithm at this exact moment.
         This function will be called automatically if the 'step-by-step'
@@ -147,6 +147,8 @@ class BaseSolver(Process):
         Returns a dict where measurement keys are asociated with corresponding
         values.
         """
+        if m is None:
+            m = {}
         m['_time'] = time.time()
         if lastMeasure is not None:
             m['_stepDuration'] = time.time() - lastMeasure['_time']

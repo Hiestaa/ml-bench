@@ -27,10 +27,13 @@ class BruteForce(Optimizer):
     def _genNext(self):
         """
         Generate the next solution to try out.
-        * solution:list, last generated solution
-        * i:int, the index of the variable to increment
         """
         def inc(solution, i=0):
+            """
+            Increment the solution's value at position i.
+            * solution:list, last generated solution
+            * i:int, the index of the variable to increment
+            """
             done = False
             if i >= len(solution):
                 return True
@@ -42,13 +45,15 @@ class BruteForce(Optimizer):
             return done
 
         # solution = [min, min, min, ...]
-        solution = [var[1] for var in self._scope]
+        solution = [var[0](var[1]) for var in self._scope]
         done = False
         while not done:
             yield solution
             done = inc(solution)
 
-    def measure(self, lastMeasure=None, m={}):
+    def measure(self, lastMeasure=None, m=None):
+        if m is None:
+            m = {}
         m['best'] = self._bestSol[1]
         m['valueIncreasePerSecond'] = \
             abs(self._bestSol[1] - self._firstSol[1]) / \
@@ -87,7 +92,7 @@ class BruteForce(Optimizer):
             self._log(
                 '>>> [%.3f] %s is better!' % (evaluation, str(solution)),
                 timeout=0.01, level=3)
-            self._bestSol = (solution, evaluation)
+            self._bestSol = (list(solution), evaluation)
         # save the first evaluation for the measurement function
         if self._firstSol is None:
             self._firstSol = self._bestSol

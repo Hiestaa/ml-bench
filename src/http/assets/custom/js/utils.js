@@ -1,6 +1,6 @@
 $(function () {
     function formatDoc(doc) {
-        return doc.replace(/\n\*/g, '<br>*').replace(/`([\w\s\d]*)`/gm, '<code>$1</code>')
+        return doc.replace(/\n\*/g, '<br>*').replace(/`([\w\s\d,._\*+-]*)`/gm, '<code>$1</code>')
     }
     function isPositiveInteger(str) {
         return /^\+?(0|[1-9]\d*)$/.test(str);
