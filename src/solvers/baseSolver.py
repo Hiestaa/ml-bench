@@ -60,6 +60,8 @@ class BaseSolver(Process):
         self._msrReader, self._msrWriter = Pipe(False)
         self._lastMsrWrite = time.time()
         self._start_t = time.time()
+        self._nbSteps = 0
+        self._startTime = None
 
     def getLogOutput(self):
         return self._logReader
@@ -116,6 +118,14 @@ class BaseSolver(Process):
         if force or time.time() - self._lastMsrWrite > timeout:
             self._msrWriter.send(message)
             self._lastMsrWrite = time.time()
+
+    def initialize(self):
+        """
+        Called once right before starting the solver.
+        Warning: this will not be called by the object's constructor,
+        creating new object properties won't work there.
+        """
+        self._startTime = time.time()
 
     def measure(self, lastMeasure=None, m={}):
         """
@@ -179,9 +189,11 @@ class BaseSolver(Process):
         """
         measure = None
         while not self.step():
+            self._nbSteps += 1
             measure = self.measure(lastMeasure=measure)
 
     def run(self):
+        self.initialize()
         try:
             self.solve()
         except Solution as sol:

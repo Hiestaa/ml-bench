@@ -20,6 +20,7 @@ class BruteForce(Optimizer):
         super(BruteForce, self).__init__(name=name, problem=problem)
         self._step = float(step)
         self._bestSol = None
+        self._firstSol = None
         self._solGenerator = self._genNext()
         print "Starting Bruteforce optimizer."
 
@@ -49,10 +50,9 @@ class BruteForce(Optimizer):
 
     def measure(self, lastMeasure=None, m={}):
         m['best'] = self._bestSol[1]
-        if lastMeasure is not None and 'best' in lastMeasure:
-            m['valueIncrease'] = self._bestSol[1] - lastMeasure['best']  # doesn't work
-        else:
-            m['valueIncrease'] = self._bestSol[1]  # doesn't work
+        m['valueIncreasePerSecond'] = \
+            abs(self._bestSol[1] - self._firstSol[1]) / \
+            float(time.time() - self._startTime)
         return super(BruteForce, self).measure(lastMeasure=lastMeasure, m=m)
 
     def step(self):
@@ -88,6 +88,9 @@ class BruteForce(Optimizer):
                 '>>> [%.3f] %s is better!' % (evaluation, str(solution)),
                 timeout=0.01, level=3)
             self._bestSol = (solution, evaluation)
+        # save the first evaluation for the measurement function
+        if self._firstSol is None:
+            self._firstSol = self._bestSol
 
         # a bit of logging
         self._log(

@@ -9,7 +9,7 @@ function MeasurementsView ($viewContainer) {
     self._groups = null;
     self._dataset = null;
     self._startWindow = new Date();
-    self._endWindow = new Date();
+    self._endWindow = new Date(self._startWindow.getTime() + 5);
     self._groupVisibility = {'__ungrouped__': true};
 
     self.onToggleGroup = function () {
@@ -24,13 +24,25 @@ function MeasurementsView ($viewContainer) {
         });
     }
 
+    // fit the graph to the window, leaving some space on the right
+    // so that it does not get updated too often
+    self._fitGraph = function (lastAdded) {
+        if (lastAdded && lastAdded.x.getTime() > self._endWindow.getTime()) {
+            // the end of the window will be X seconds after the last added point
+            // so that we are sure it won't be updated for the next X seconds.
+            self._endWindow.setSeconds(lastAdded.x.getSeconds() + 5.5);
+            console.log("Fitting to: ", self._endWindow)
+            self._graph.setWindow(self._startWindow, self._endWindow, {animation: true});
+        }
+    }
+
     // Called when a new measurement is performed.
     // the measurement object should at least have the `_time` property.
     // if no other field is present, this function does nothing. Otherwise,
     // a data point is added to the graph for each other property.
     // Each property's value is expected to be a number.
     self.onMeasure = function (measure) {
-        var x = new Date(measure._time);
+        var x = new Date(measure._time * 1000); // seconds to microseconds
         var toAdd = [];
         for (var property in measure) {
             if (property == '_time')
@@ -55,12 +67,16 @@ function MeasurementsView ($viewContainer) {
             });
         }
         self._dataset.add(toAdd);
-        self._graph.fit();
+        self._fitGraph(toAdd[toAdd.length - 1]);
     }
 
     self.initialize = function () {
         self._$visualization.html('');
         self._$toggleMeasureContainer.html('');
+
+        self._startWindow = new Date();
+        self._endWindow = new Date(self._startWindow.getTime() + 5);
+        self._fitGraph()
 
         self._groups = new vis.DataSet();
         self._dataset = new vis.DataSet()
