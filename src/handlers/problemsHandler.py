@@ -44,6 +44,18 @@ class ProblemsHandler(RequestHandler):
         data = yield model.getService('solvers').deleteByProblemId(_id)
         self.write(json.dumps(data))
 
+    def getVisualizations(self):
+        """
+        Route: `GET /api/problems/visualizations`
+        Return the list of visualizations, indexed by implementation
+        class name.
+        All classes may not be there, if no visualization has been defined yet.
+        """
+        with open(os.path.join(
+                Conf['scriptFolders']['problemViews'],
+                'hook.json'), 'r') as f:
+            self.write(f.read())
+
     def getProblemClasses(self):
         """
         Route: `GET /api/problems/implementations`
@@ -166,6 +178,7 @@ type interface." % (implementation))
     def get(self, action):
         actions = {
             'implementations': self.getProblemClasses,
+            'visualizations': self.getVisualizations,
             'list': self.getProblems
         }
         if action in actions:

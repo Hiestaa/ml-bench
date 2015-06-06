@@ -19,6 +19,18 @@
         <script src="/assets/uikit/js/components/sticky.min.js"></script>
         <script src="/assets/custom/js/utils.js"></script>
         <script src="/assets/selectize/js/standalone/selectize.min.js"></script>
+        <script type="text/javascript">
+            $.ajax({
+                url: '/config.json',
+                dataType: 'json',
+                success: function (config) {
+                    window.Conf = config;
+                },
+                error: function () {
+                    console.error("Unable to load configuration file!")
+                }
+            })
+        </script>
         {% block js %}{% end %}
     </head>
 

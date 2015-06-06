@@ -38,6 +38,19 @@ class Circuit(Optimization):
         self._height = int(height)
         self._distance = cityblock if distance == 'cityblock' \
             else euclidean
+        # TODO: we should initialize a matrix that contains the 'ideal'
+        # position, shuffled so that each problem is different.
+        # This matrix will need to be given to the initialization function
+        # of the circuitView, so that it knows how to initialize the edges
+        # between the nodes.
+        # We will thus have to go through this matrix to know the real length
+        # of the edges.
+
+    def initView(self):
+        return {
+            'width': self._width,
+            'height': self._height
+        }
 
     def getScope(self):
         """

@@ -54,3 +54,20 @@ class BaseProblem(object):
         self._problemTypes = problemTypes
         self._name = name
         self._dataset = dataset
+
+    def initView(self):
+        """
+        Any data that should be sent to initialize the problem view should
+        be returned as a dict by this function.
+        """
+        return {}
+
+    def viz(self, vizData):
+        """
+        Everytime the solver is sending data to the solverView
+        (using the `_viz` method), these data will be extended with the ones
+        returned by this function.
+        * vizData:dict, the data about to be sent by the solver to the solver
+          view, read-only (modifications will be discarded)
+        """
+        return {}

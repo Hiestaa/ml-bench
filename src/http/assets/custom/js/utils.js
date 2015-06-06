@@ -1,3 +1,7 @@
+String.prototype.ucFirst = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 $(function () {
     function formatDoc(doc) {
         return doc.replace(/\n\*/g, '<br>*').replace(/`([\w\s\d,._\*+-]*)`/gm, '<code>$1</code>')
@@ -78,6 +82,7 @@ $(function () {
             return res;
         }
     };
+
     window.formatDoc = formatDoc;
     window.render = render;
     window.preloadPictures = preloadPictures;

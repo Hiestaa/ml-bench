@@ -14,6 +14,10 @@ function RunUI($uiContainer) {
 
     self._logView = null;
     self._measurementsView = null;
+    self._problemView = null;
+    self._solverView = null;
+
+    self._runningSolver = null;
 
     self._retrieveSolvers = function () {
         self._selectizeSolver.clear();
@@ -59,6 +63,17 @@ function RunUI($uiContainer) {
         }
         if (data.msr) {
             self._measurementsView.onMeasure(data.msr);
+        }
+        if (data.viz) {
+            if (data.viz.initProblem && data.viz.initSolver) {
+                self.dynamicLoadViews(data.viz);
+            }
+            else {
+                if (self._problemView)
+                    self._problemView.onData(data.viz);
+                if (self._solverView)
+                    self._problemView.onData(data.viz);
+            }
         }
     }
 
@@ -127,7 +142,43 @@ function RunUI($uiContainer) {
         self._selectizeSolver.addItem(solverData._id);
     }
 
-    // note: this function will only be called once the web-socket connection has been initialized.
+    // dynamically load the problem view and the solver view, if any has been
+    // configured.
+    // This will be called once the problem and solver initialization data are retrieved through the websocket.
+    self.dynamicLoadViews = function (initData) {
+        if (self._runningSolver.problem.visualization) {
+            $.getScript('/assets/custom/js/problemViews/' + self._runningSolver.problem.visualization)
+                .done(function () {
+                    self._problemView = new window[
+                        self._runningSolver.problem.visualization
+                            .slice(0, -3)  // remove '.js'
+                            .ucFirst()  // uppercase first to get the name of the view class
+                        ]();
+                    self._problemView.initialize(initData.initProblem);
+                })
+                .fail(function (e) {
+                    console.error(e);
+                    $.UIkit.notify("Unable to load problem view '" + self._runningSolver.problem.visualization + "'!", {status: 'danger'});
+                });
+        }
+        if (self._runningSolver.visualization) {
+            $.getScript('/assets/custom/js/solverViews/' + self._runningSolver.visualization)
+                .done(function () {
+                    self._solverView = new window[
+                        self._runningSolver.visualization
+                            .slice(0, -3)
+                            .ucFirst()
+                        ]();
+                    self._solverView.initialize(initData.initSolver);
+                })
+                .fail(function (e) {
+                    console.error(e);
+                    $.UIkit.notify("Unable to load solver view '" + self._runningSolver.visualization + "'!", {status: 'danger'});
+                });
+        }
+    }
+
+    // called when the user click on the 'Run' button
     self.onRun = function () {
         self._webSocket = new WebSocket('ws://localhost:5000/api/run/');
         self._webSocket.onmessage = self._onSocketMessage
@@ -145,6 +196,7 @@ function RunUI($uiContainer) {
                 action: 'run',
                 solver: solverId
             }));
+            self._runningSolver = self._solversById[solverId];
         };
     }
 }

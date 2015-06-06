@@ -13,6 +13,7 @@ function ProblemForm($container, events, options) {
     self._$formContainer = $container;
     self._$form = $container.find('.problem-form');
     self._implementations = null;
+    self._visualizations = {};
     self._parameterTemplate = '\
 <div class="uk-width-1-1 uk-width-medium-1-2 uk-width-large-1-3 parameter-field">\
     <label class="uk-form-label" for="input-{{name}}">{{name}}</label>\
@@ -37,6 +38,44 @@ function ProblemForm($container, events, options) {
             self._$form.find('#input-name').val(prefill.name);
         if (prefill && prefill.type)
             self._selectizeType.addItem(prefill.type);
+    }
+
+    self.retrieveImplementations = function (_cb) {
+        $.ajax({
+            url: '/api/problems/implementations',
+            dataType: 'json',
+            success: function (results) {
+                self._implementations = results;
+                self._selectizeType.clearOptions();
+                for (var type in self._implementations) {
+                    self._selectizeType.addOption({
+                        value: type,
+                        text: type
+                    });
+                };
+                if (_cb)
+                    _cb();
+            },
+            error: function (error) {
+                console.error(error);
+                $.UIkit.notify("An error occurred while retrieving the available implementations, see logs for details", {status:'danger'});
+            }
+        })
+    }
+
+    self.retrieveVisualizations = function () {
+        $.ajax({
+            url: '/api/problems/visualizations',
+            dataType: 'json',
+            success: function (results) {
+                console.log("Visualizations:", results);
+                self._visualizations = results;
+            },
+            error: function (error) {
+                console.error(error);
+                $.UIkit.notify("An error occurred while retrieving the available visualization scripts, see logs for details", {status:'danger'});
+            }
+        })
     }
 
     /*
@@ -66,26 +105,11 @@ function ProblemForm($container, events, options) {
         self._$form.find('#reset').click(self.onReset);
         self._$form.find('#submit').click(self.onSubmit);
 
-        $.ajax({
-            url: '/api/problems/implementations',
-            dataType: 'json',
-            success: function (results) {
-                self._implementations = results;
-                self._selectizeType.clearOptions();
-                for (var type in self._implementations) {
-                    self._selectizeType.addOption({
-                        value: type,
-                        text: type
-                    });
-                };
-                if (problem)
-                    self.setProblem(problem)
-            },
-            error: function (error) {
-                console.error(error);
-                $.UIkit.notify("An error occurred while retrieving the available implementations, see logs for details", {status:'danger'})
-            }
-        })
+        self.retrieveVisualizations();
+        self.retrieveImplementations(function () {
+            if (problem)
+                self.setProblem(problem)
+        });
     }
 
     self.onSelectType = function (type) {
@@ -105,6 +129,7 @@ function ProblemForm($container, events, options) {
     }
 
     self.onSelectImplem = function (implem) {
+        // reset some parts of the form to its initial satte
         var selectedType = null;
         var classObj = null;
         self._$form.find('#description').html('Select an implementation to view its description here...');
@@ -112,8 +137,12 @@ function ProblemForm($container, events, options) {
         if (!implem) {
             return;
         }
+
+        // get the selected data
         selectedType = self._selectizeType.getValue();
         classObj = self._implementations[selectedType][implem];
+
+        // fill in description and parameters parts of the form
         self._$form.find('#description').html(
             formatDoc(classObj.description));
         for (var parameter in classObj.parameters) {
@@ -123,6 +152,21 @@ function ProblemForm($container, events, options) {
                     value: classObj.parameters[parameter]
                 }));
         };
+
+        // populate visualization selectize
+        self._selectizeVisualization.clearOptions();
+        self._selectizeVisualization.clear();
+        if (self._visualizations[implem]) {
+            for (var i = 0; i < self._visualizations[implem].length; i++) {
+                var viz = self._visualizations[implem][i];
+                if (viz === undefined)
+                    break;
+                self._selectizeVisualization.addOption({
+                    text: viz,
+                    value: viz
+                });
+            }
+        }
     }
 
     self.onClearSelectType = function () {
@@ -163,6 +207,9 @@ function ProblemForm($container, events, options) {
         // add the type and implementation of this problem to the selectize boxes
         self._selectizeType.addItem(typeToDisplay);
         self._selectizeImplem.addItem(implem);
+        if (self._visualizations[implem] && problem.visualization && self._visualizations[implem].indexOf(problem.visualization) > -1) {
+            self._selectizeVisualization.addItem(problem.visualization);
+        }
 
         // fill in the name of the problem
         if (!problem._generatedName)

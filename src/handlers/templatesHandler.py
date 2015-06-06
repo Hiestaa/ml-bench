@@ -6,14 +6,24 @@ from tornado.web import RequestHandler, HTTPError
 from tornado import gen
 
 import logging
+import json
 
 from tools import model
+from conf import Conf
 
 
 class TemplatesHandler(RequestHandler):
     """Handle requests for html templates"""
+    def filteredConf(self):
+        return {
+            'scriptFolders': Conf['scriptFolders'],
+            'state': Conf['state']
+        }
+
     @gen.coroutine
     def get(self, template=None):
+        if template == 'config.json':
+            return self.write(json.dumps(self.filteredConf()))
         # s = yield model.getService('solverTemplates').insert(
         #     type='optimizer', basename='opt', parameters={},
         #     implementation='implem', visualization='viz')

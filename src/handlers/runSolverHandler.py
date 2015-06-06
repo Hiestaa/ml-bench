@@ -115,10 +115,17 @@ class RunSolverHandler(WebSocketHandler):
             <name>: <object sent over the pipe>
         }
         Where `<name>` can be either "log", "viz" or "msr".
-        The `log` object will be a dict having the key `message`
+
+        * The `log` object will be a dict having the key `message`
         (the actual log message) and `level` which by default is 0.
-        The `msr` object will be a dict having at least the key `_time`.
-        The format of the objects are defined in each solver.
+        * The `msr` object will be a dict having at least the key `_time`.
+        * The `viz` object will be a dict describing the state of the solution
+        during the solving process. The structure depends on the problem and
+        the solver used. The first object send will however always contain the
+        keys 'initProblem' and 'initSolver' which allow to respectively
+
+        More information on the format of the objects can be found in the
+        doctstring in each solver.
         """
         logging.info("Starting %s to socket forwarder..." % name)
         loops = 0

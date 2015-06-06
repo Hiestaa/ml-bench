@@ -7,6 +7,7 @@ import time
 import random
 
 from mlbExceptions import SolverException
+from tools import utils
 
 
 class Solution(Exception):
@@ -87,7 +88,8 @@ class BaseSolver(Process):
         #       % (timeout, str(force), message))
         if force or time.time() - self._lastLogWrite > timeout:
             self._logWriter.send({'message': message, 'level': level})
-            self._lastLogWrite = time.time()
+            if not force:
+                self._lastLogWrite = time.time()
             self._ignoredLogInfoSent = False
         elif not self._ignoredLogInfoSent:
             self._ignoredLogInfoSent = True
@@ -100,12 +102,15 @@ class BaseSolver(Process):
         If a message has been already sent in the last `timeout` second, the
         message will be discarded to limit the write rate over the socket.
         Set `force` to True to disable this behaviour (or `timeout` to 0)
+        Note: `message` is expected to be a dict.
         """
-        # print("[VIZ][to=%.3fs][force=%s] %s"
-        #               % (timeout, str(force), message))
+        print("[VIZ][to=%.3fs][force=%s] %s"
+              % (timeout, str(force), message))
         if force or time.time() - self._lastVizWrite > timeout:
+            message = utils.extends(message, **self._problem.viz(message))
             self._vizWriter.send(message)
-            self._lastVizWrite = time.time()
+            if not force:
+                self._lastVizWrite = time.time()
 
     def _msr(self, message, timeout=1.0, force=False):
         """
@@ -117,7 +122,8 @@ class BaseSolver(Process):
         """
         if force or time.time() - self._lastMsrWrite > timeout:
             self._msrWriter.send(message)
-            self._lastMsrWrite = time.time()
+            if not force:
+                self._lastMsrWrite = time.time()
 
     def initialize(self):
         """
@@ -126,6 +132,13 @@ class BaseSolver(Process):
         creating new object properties won't work there.
         """
         self._startTime = time.time()
+
+    def initView(self):
+        """
+        Any data that should be sent to initialize the solver view should be
+        returned as a dict by this function.
+        """
+        return {}
 
     def measure(self, lastMeasure=None, m=None):
         """
@@ -196,6 +209,10 @@ class BaseSolver(Process):
 
     def run(self):
         self.initialize()
+        self._viz({
+            'initProblem': self._problem.initView(),
+            'initSolver': self.initView()
+        }, force=True)
         try:
             self.solve()
         except Solution as sol:
