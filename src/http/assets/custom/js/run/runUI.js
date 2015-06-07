@@ -153,7 +153,7 @@ function RunUI($uiContainer) {
                         self._runningSolver.problem.visualization
                             .slice(0, -3)  // remove '.js'
                             .ucFirst()  // uppercase first to get the name of the view class
-                        ]();
+                        ]($('#problem-panel'));
                     self._problemView.initialize(initData.initProblem);
                 })
                 .fail(function (e) {
@@ -168,7 +168,7 @@ function RunUI($uiContainer) {
                         self._runningSolver.visualization
                             .slice(0, -3)
                             .ucFirst()
-                        ]();
+                        ]($('#solver-panel'));
                     self._solverView.initialize(initData.initSolver);
                 })
                 .fail(function (e) {

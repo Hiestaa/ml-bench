@@ -104,8 +104,8 @@ class BaseSolver(Process):
         Set `force` to True to disable this behaviour (or `timeout` to 0)
         Note: `message` is expected to be a dict.
         """
-        print("[VIZ][to=%.3fs][force=%s] %s"
-              % (timeout, str(force), message))
+        # print("[VIZ][to=%.3fs][force=%s] %s"
+        #       % (timeout, str(force), message))
         if force or time.time() - self._lastVizWrite > timeout:
             message = utils.extends(message, **self._problem.viz(message))
             self._vizWriter.send(message)

@@ -32,40 +32,121 @@ function CircuitView ($viewContainer) {
     self._network = null;
 
     self._nodes = null;
+    self._initNodesPos = null;
     self._edges = null;
     self._lastBestSol = null;
+    self._circuitWidth = null;
+    self._circuitHeight = null;
 
     // to be called when the server is pushing non-initialization data
     self.onData = function (data) {
-        console.log("OnData", data);
-        if (data.best.solution.length != self._nodes.length) {
-            /* create the nodes, create the edges.
-            Note: component 1, 1 is linked to component 1, 2 and 2, 1, etc...
-            */
-        }
         if (!self._lastBestSol || !data.best.solution.equals(self._lastBestSol)) {
-            // move the nodes accordingly. The edges shouldn't move.
+            self._lastBestSol = data.best.solution;
+            console.log("New best solution: ", self._lastBestSol);
+
+            var totalWidth = $(self._network.configurator.container).width();
+            var totalHeight = $(self._network.configurator.container).width();
+            var updates = [];
+
+            for (var x = 0; x < self._circuitWidth; x++) {
+                for (var y = 0; y < self._circuitHeight; y++) {
+                    console.log("Component: ", x + y * self._circuitWidth, " goes to position: ", self._lastBestSol[x + y * self._circuitWidth]);
+                    updates.push({
+                        id: x + y * self._circuitWidth,
+                        x: self._initNodesPos[self._lastBestSol[x + y * self._circuitWidth]].x,
+                        y: self._initNodesPos[self._lastBestSol[x + y * self._circuitWidth]].y
+                    });
+                };
+            };
+            self._nodes.update(updates);
         }
-        //
+    }
+
+    self._saveInitNodesPos = function (initNodes) {
+        self._initNodesPos = {}
+        // save the initial position of the nodes
+        for (var i = 0; i < initNodes.length; i++) {
+            self._initNodesPos[initNodes[i].id] = {
+                x: initNodes[i].x,
+                y: initNodes[i].y
+            };
+        };
+        console.log("initNodesPos: ", self._initNodesPos);
     }
 
     // height is the number of components, vertically
     // width in the number of components, horizontally
     self.createGraph = function (width, height) {
         console.log("Creating graph", width, height)
+        var totalWidth = $(self._network.configurator.container).width();
+        var totalHeight = $(self._network.configurator.container).width();
+        self._circuitHeight = height;
+        self._circuitWidth = width;
+        // create the nodes, initial state, will be moved according to the solution
+        // found as the solver is running
+        var toAdd = []
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+                toAdd.push({
+                    id: x + y * width,
+                    label: 'Component ' + (x + y * width),
+                    title: 'Component ' + (x + y * width),
+                    x: x * (totalWidth - 50) / width + 25,  // 25px margin on the left/right
+                    y: y * (totalHeight - 50) / height + 25,  // 25px margin on the top/bottom
+                    fixed: true,
+                    physics: false,
+                    shape: 'box'
+                });
+            };
+        };
+        self._saveInitNodesPos(toAdd);
+        self._nodes.add(toAdd);
+
+        // create the edges, node (x, y) should be connected to node (x, y+1) and (x+1, y)
+        toAdd = [];
+        for (var x = 0; x < width; x++) {
+            for (var y = 0; y < height; y++) {
+                if (y < height - 1) {
+                    // to left
+                    toAdd.push({
+                        from: x + y * width,
+                        to: x + (y + 1) * width,
+                        physics: false,
+                        smooth: false
+                    });
+                }
+                if (x < width - 1) {
+                    // to bottom
+                    toAdd.push({
+                        from: x + y * width,
+                        to: x + 1 + y * width,
+                        physics: false,
+                        smooth: {
+                            type: 'none'
+                        }
+                    });
+                }
+            };
+        };
+        self._edges.add(toAdd);
     }
 
     // to be called when the server is pushing initialization data
     // i.e.: data contained into a `initProblem` field.
     self.initialize = function (initData) {
-        self._$visualization.html('');
+        self._$visualization.html('')
+            .height('400px')
+            .addClass('visualization-panel');
 
-        self._nodes = vis.DataSet();
-        self._edges = vis.DataSet();
+        self._nodes = new vis.DataSet({});
+        self._edges = new vis.DataSet({});
         var options = {
             clickToUse: true,
+            interaction: {
+                dragNodes: false
+            }
         }
-        self._network = vis.Network(self._$visualization[0], {
+        self._network = new vis.Network(self._$visualization[0], {
             nodes: self._nodes,
             edges: self._edges
         }, options);

@@ -20,6 +20,19 @@
     padding-right: 2em;
 }
 
+#run-ui-container .visualization-panel {
+    background-color: #222;
+    border-radius: 5px;
+}
+
+#run-ui-container .visualization-panel .vis-active {
+    box-shadow: 0px 0px 10px #00B1FF;
+}
+
+#run-ui-container #measurements-panel .uk-grid {
+    margin-bottom: 5px;
+}
+
 #run-ui-container pre.log-output .log {
     display: block;
 }
@@ -59,8 +72,4 @@
 #run-ui-container pre.log-output .log.level-10 {
     color: #ff0000;
     font-weight: bold
-}
-
-#measurements-panel .uk-grid {
-    margin-bottom: 5px;
 }
