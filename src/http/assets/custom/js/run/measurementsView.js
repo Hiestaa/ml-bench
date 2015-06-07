@@ -14,9 +14,7 @@ function MeasurementsView ($viewContainer) {
 
     self.onToggleGroup = function () {
         var group = $(this).data('group');
-        console.log("Before toggle: ", self._groupVisibility)
         self._groupVisibility[group] = !self._groupVisibility[group];
-        console.log("Setting visibility: ", self._groupVisibility)
         self._graph.setOptions({
             groups: {
                 visibility: self._groupVisibility
@@ -31,7 +29,6 @@ function MeasurementsView ($viewContainer) {
             // the end of the window will be X seconds after the last added point
             // so that we are sure it won't be updated for the next X seconds.
             self._endWindow.setSeconds(lastAdded.x.getSeconds() + 5.5);
-            console.log("Fitting to: ", self._endWindow)
             self._graph.setWindow(self._startWindow, self._endWindow, {animation: true});
         }
     }

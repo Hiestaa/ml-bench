@@ -2,9 +2,14 @@
 
 from __future__ import unicode_literals
 
-from optimization import Optimization
-import numpy as np
 import math
+import random
+
+from optimization import Optimization
+
+
+def sqr(x):
+    return x * x
 
 
 def cityblock(p1, p2):
@@ -12,7 +17,7 @@ def cityblock(p1, p2):
 
 
 def euclidean(p1, p2):
-    return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
+    return sqr(p1[0] - p2[0]) + sqr(p1[1] - p2[1])
 
 
 class Circuit(Optimization):
@@ -38,18 +43,16 @@ class Circuit(Optimization):
         self._height = int(height)
         self._distance = cityblock if distance == 'cityblock' \
             else euclidean
-        # TODO: we should initialize a matrix that contains the 'ideal'
-        # position, shuffled so that each problem is different.
-        # This matrix will need to be given to the initialization function
-        # of the circuitView, so that it knows how to initialize the edges
-        # between the nodes.
-        # We will thus have to go through this matrix to know the real length
-        # of the edges.
+        # _shuffle adds one more step when evaluating the solution.
+        # to avoid the 'perfect' solution to always be [0, 1, 2, 3 ... ]
+        self._shuffle = [x for x in xrange(self._width * self._height)]
+        random.shuffle(self._shuffle)
 
     def initView(self):
         return {
             'width': self._width,
-            'height': self._height
+            'height': self._height,
+            'shuffle': self._shuffle
         }
 
     def getScope(self):
@@ -98,7 +101,8 @@ class Circuit(Optimization):
             virtual 2D circuit to allow distance computation.
             """
             # transform a solution value into a 2 components position
-            return (pos % self._width * 5, pos / self._height * 5)
+            return (self._shuffle[pos] % self._width * 5,
+                    self._shuffle[pos] / self._height * 5)
 
         def computeCnxLen(compo):
             """
@@ -117,7 +121,6 @@ class Circuit(Optimization):
                     pos2Coord(componentsPosition(compo[0], compo[1])),
                     pos2Coord(componentsPosition(compo[0], compo[1] + 1)))
             return length
-            print res, solution
 
-        return sum(computeCnxLen((x, y)) for x in xrange(self._width - 1)
-                   for y in xrange(self._height - 1))
+        return sum(computeCnxLen((x, y)) for x in xrange(self._width)
+                   for y in xrange(self._height))

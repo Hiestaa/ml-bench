@@ -100,7 +100,6 @@ function RunUI($uiContainer) {
 
     self.onSolverSelect = function (value, data) {
         if (!(value in self._solversById)) {
-            console.log("Create solver: ", value, data);
             self._solverForm.prefill({
                 name: value
             });
@@ -132,7 +131,6 @@ function RunUI($uiContainer) {
     }
 
     self.onCreateSolver = function (solverData) {
-        console.log("Solver created: ", solverData);
         self._solverFormModal.hide();
         self._selectizeSolver.addOption({
             text: solverData.name,

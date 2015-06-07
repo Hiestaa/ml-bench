@@ -42,7 +42,6 @@ function CircuitView ($viewContainer) {
     self.onData = function (data) {
         if (!self._lastBestSol || !data.best.solution.equals(self._lastBestSol)) {
             self._lastBestSol = data.best.solution;
-            console.log("New best solution: ", self._lastBestSol);
 
             var totalWidth = $(self._network.configurator.container).width();
             var totalHeight = $(self._network.configurator.container).width();
@@ -50,11 +49,10 @@ function CircuitView ($viewContainer) {
 
             for (var x = 0; x < self._circuitWidth; x++) {
                 for (var y = 0; y < self._circuitHeight; y++) {
-                    console.log("Component: ", x + y * self._circuitWidth, " goes to position: ", self._lastBestSol[x + y * self._circuitWidth]);
                     updates.push({
                         id: x + y * self._circuitWidth,
-                        x: self._initNodesPos[self._lastBestSol[x + y * self._circuitWidth]].x,
-                        y: self._initNodesPos[self._lastBestSol[x + y * self._circuitWidth]].y
+                        x: self._initNodesPos[self._circuitShuffle[self._lastBestSol[x + y * self._circuitWidth]]].x,
+                        y: self._initNodesPos[self._circuitShuffle[self._lastBestSol[x + y * self._circuitWidth]]].y
                     });
                 };
             };
@@ -62,33 +60,35 @@ function CircuitView ($viewContainer) {
         }
     }
 
-    self._saveInitNodesPos = function (initNodes) {
+    self._saveInitNodesPos = function (totalWidth, totalHeight) {
         self._initNodesPos = {}
         // save the initial position of the nodes
-        for (var i = 0; i < initNodes.length; i++) {
-            self._initNodesPos[initNodes[i].id] = {
-                x: initNodes[i].x,
-                y: initNodes[i].y
+        for (var x = 0; x < self._circuitWidth; x++) {
+            for (var y = 0; y < self._circuitHeight; y++) {
+                self._initNodesPos[x + y * self._circuitWidth] = {
+                    x: x * (totalWidth - 50) / self._circuitWidth + 25,  // 25px margin on the left/right
+                    y: y * (totalHeight - 50) / self._circuitHeight + 25  // 25px margin on the top/bottom
+                };
             };
         };
-        console.log("initNodesPos: ", self._initNodesPos);
     }
 
     // height is the number of components, vertically
     // width in the number of components, horizontally
-    self.createGraph = function (width, height) {
-        console.log("Creating graph", width, height)
+    // shuffle is the shuffled array that maps a compoment index to its ideal position
+    self.createGraph = function (width, height, shuffle) {
         var totalWidth = $(self._network.configurator.container).width();
         var totalHeight = $(self._network.configurator.container).width();
         self._circuitHeight = height;
         self._circuitWidth = width;
+        self._circuitShuffle = shuffle;
         // create the nodes, initial state, will be moved according to the solution
         // found as the solver is running
         var toAdd = []
         for (var x = 0; x < width; x++) {
             for (var y = 0; y < height; y++) {
                 toAdd.push({
-                    id: x + y * width,
+                    id: self._circuitShuffle[x + y * width],
                     label: 'Component ' + (x + y * width),
                     title: 'Component ' + (x + y * width),
                     x: x * (totalWidth - 50) / width + 25,  // 25px margin on the left/right
@@ -99,7 +99,7 @@ function CircuitView ($viewContainer) {
                 });
             };
         };
-        self._saveInitNodesPos(toAdd);
+        self._saveInitNodesPos(totalWidth, totalHeight);
         self._nodes.add(toAdd);
 
         // create the edges, node (x, y) should be connected to node (x, y+1) and (x+1, y)
@@ -121,9 +121,7 @@ function CircuitView ($viewContainer) {
                         from: x + y * width,
                         to: x + 1 + y * width,
                         physics: false,
-                        smooth: {
-                            type: 'none'
-                        }
+                        smooth: false
                     });
                 }
             };
@@ -151,6 +149,6 @@ function CircuitView ($viewContainer) {
             edges: self._edges
         }, options);
 
-        self.createGraph(initData.width, initData.height);
+        self.createGraph(initData.width, initData.height, initData.shuffle);
     }
 }
