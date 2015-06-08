@@ -26,6 +26,8 @@ Array.prototype.equals = function (array) {
 function CircuitView ($viewContainer) {
     var self = this;
 
+    ExpandablePanel.call(this, $viewContainer);
+
     self._$viewContainer = $viewContainer;
     self._$visualization = self._$viewContainer.find("#problem-vis");
 
@@ -133,7 +135,7 @@ function CircuitView ($viewContainer) {
     // i.e.: data contained into a `initProblem` field.
     self.initialize = function (initData) {
         self._$visualization.html('')
-            .height('400px')
+            .height('50vh')
             .addClass('visualization-panel');
 
         self._nodes = new vis.DataSet({});
@@ -151,4 +153,12 @@ function CircuitView ($viewContainer) {
 
         self.createGraph(initData.width, initData.height, initData.shuffle);
     }
+}
+
+CircuitView.prototype = Object.create(ExpandablePanel.prototype);
+CircuitView.prototype.onExpand = function () {
+    this._$visualization.height('calc(100% - 40px)');
+}
+CircuitView.prototype.onCompress = function () {
+    this._$visualization.height('50vh');
 }

@@ -1,6 +1,8 @@
 function MeasurementsView ($viewContainer) {
     var self = this;
 
+    ExpandablePanel.call(this, $viewContainer);
+
     self._$viewContainer = $viewContainer;
     self._$visualization = self._$viewContainer.find("#measurements-vis");
     self._$toggleMeasureContainer = self._$viewContainer.find('#toggle-measure');
@@ -80,8 +82,24 @@ function MeasurementsView ($viewContainer) {
         var options = {
           clickToUse: true,
           showCurrentTime: false,
-          legend: true
+          legend: true,
+          height: '50vh'
         };
         self._graph = new vis.Graph2d(self._$visualization[0], self._dataset, self._groups, options);
     }
+}
+
+MeasurementsView.prototype = Object.create(ExpandablePanel.prototype);
+MeasurementsView.prototype.onExpand = function () {
+    this._$visualization.height('calc(100% - 40px)');
+    this._graph.setOptions({
+        height: '100%'
+    });
+}
+MeasurementsView.prototype.onCompress = function () {
+    this._$visualization.height('50vh');
+    this._graph.redraw();
+        this._graph.setOptions({
+        height: '50vh'
+    });
 }
